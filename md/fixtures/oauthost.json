@@ -11,9 +11,17 @@
       "date_registered": "2013-05-02T06:17:21.613Z", 
       "link": "", 
       "user": 1, 
-      "scopes": [], 
+      "scopes": [],
       "identifier": "2dc5d858f1f441aa8e957b82ce248816", 
       "type": 1
+    }
+  },
+  {
+    "pk": 1,
+    "model": "oauthost.scope",
+    "fields": {
+      "identifier": "message:create",
+      "title": "message:create"
     }
   }
 ]

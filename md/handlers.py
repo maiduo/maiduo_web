@@ -2,8 +2,13 @@
 #! -*- encoding:utf-8 -*-
 
 from models import Message
+from oauthost.decorators import oauth_required
 from piston.handler import BaseHandler
-from piston.utils   import rc
+from piston.utils import rc, validate
+from models import Message
+from forms import MessageForm
+from utils import get_client_ip
+from pdb import set_trace as bp
 
 class MessageHandler(BaseHandler):
     model = Message
@@ -13,9 +18,11 @@ class MessageHandler(BaseHandler):
     def read(request):
         pass
 
-    def create(request):
-        form = MessageForm(request.POST)
-        if form.is_valid():
-            return rc.CREATED
-        else:
-            return rc.BAD_REQUESTED
+    #@oauth_required(scope_auto=True)
+    #@validate(MessageForm)
+    def create(self, request, **kwargs):
+        # pdb.set_trace()
+        attrs = self.flatten_dict(request.POST)
+        Message.objects.create(user=request.user, body=attrs['body'], \
+                               ip=get_client_ip(request))
+        return rc.CREATED
