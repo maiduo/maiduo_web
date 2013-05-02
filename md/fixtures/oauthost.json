@@ -1,0 +1,19 @@
+[
+  {
+    "pk": 2, 
+    "model": "oauthost.client", 
+    "fields": {
+      "token_lifetime": null, 
+      "password": "", 
+      "description": "test", 
+      "title": "test", 
+      "hash_sign_supported": true, 
+      "date_registered": "2013-05-02T06:17:21.613Z", 
+      "link": "", 
+      "user": 1, 
+      "scopes": [], 
+      "identifier": "2dc5d858f1f441aa8e957b82ce248816", 
+      "type": 1
+    }
+  }
+]
