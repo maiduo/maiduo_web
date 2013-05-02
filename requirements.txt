@@ -1,0 +1,3 @@
+django-ios-notifications
+django-oauthost
+django-piston
