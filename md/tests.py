@@ -11,6 +11,8 @@ from django.test.utils import override_settings
 from django.test.client import Client
 from pdb import Pdb, set_trace as bp
 from models import Message
+import os
+import utils
 
 class MessageTest(TestCase):
     fixtures = ['users', 'oauthost.json']
@@ -42,3 +44,26 @@ class MessageTest(TestCase):
 
         msg = Message.objects.get(body="The first.")
         self.assertEquals("The first.", msg.body)
+
+    def test_create_message_and_activity(self):
+        pass
+
+class ImageTest(TestCase):
+    def test_copy_file(self):
+        import tempfile
+        dest = tempfile.NamedTemporaryFile("w")
+        src  = file("resources/10x10.png", "r")
+        
+        utils.copy_file(src, dest)
+        self.assertEquals(os.stat(src.name).st_size, os.stat(dest.name).st_size)
+
+        dest.close()
+        src.close()
+        
+    def test_image_resize(self):
+        # utils.image_resize(file("resources/10x10.png"))
+        pass
+
+    def test_image_resize_width_less_than_620(self):
+        utils.image_resize(file("resources/10x10.png", 620))
+        assert 1==2
