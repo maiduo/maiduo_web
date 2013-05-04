@@ -16,7 +16,3 @@ def copy_file(src, dest):
             dest.flush()
             return
         dest.write(_buffer)
-
-def image_resize(fp, width):
-    pass
-

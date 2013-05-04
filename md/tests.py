@@ -46,9 +46,19 @@ class MessageTest(TestCase):
         self.assertEquals("The first.", msg.body)
 
     def test_create_message_and_activity(self):
-        pass
+        message_fields = {\
+            "body": "The first.",
+            'access_token': self.access_token,
+            "addons": open("resources/10x10.png")
+        }
 
-class ImageTest(TestCase):
+        rsp = self.client.post('/api/message/', message_fields)
+        self.assertEquals(201, rsp.status_code)
+
+        msg = Message.objects.get(body="The first.")
+        self.assertEquals("The first.", msg.body)
+
+class UtilsTest(TestCase):
     def test_copy_file(self):
         import tempfile
         dest = tempfile.NamedTemporaryFile("w")
@@ -59,11 +69,3 @@ class ImageTest(TestCase):
 
         dest.close()
         src.close()
-        
-    def test_image_resize(self):
-        # utils.image_resize(file("resources/10x10.png"))
-        pass
-
-    def test_image_resize_width_less_than_620(self):
-        utils.image_resize(file("resources/10x10.png", 620))
-        assert 1==2

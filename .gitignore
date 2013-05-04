@@ -1,1 +1,4 @@
 *.pyc
+.DS_Store
+*.sqlite3
+media/user/
