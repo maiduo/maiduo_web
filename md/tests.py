@@ -10,7 +10,7 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.test.client import Client
 from pdb import Pdb, set_trace as bp
-from models import Message
+from models import Message, Activity
 import os
 import utils
 
@@ -48,15 +48,17 @@ class MessageTest(TestCase):
 
     def test_create_text_message_empty_activity_id_and_subject(self):
         message_fields = {\
-            "body": "The first.",
+            "body": "The second.",
             'access_token': self.access_token,
         }
 
         rsp = self.client.post('/api/message/', message_fields)
         self.assertEquals(201, rsp.status_code)
 
-        msg = Message.objects.get(body="The first.")
-        self.assertEquals("The first.", msg.body)
+        msg = Message.objects.get(body="The second.")
+        self.assertEquals("The second.", msg.body)
+        
+        activity = Activity.objects.get(subject=msg.body)
 
 
     def test_create_message_and_activity(self):
