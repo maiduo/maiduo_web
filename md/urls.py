@@ -7,5 +7,5 @@ import oauthost.urls
 message_handler = Resource(MessageHandler, \
                            authentication=PistonAuthHelper(None))
 urlpatterns = oauthost.urls.urlpatterns + patterns('',
-    url(r'^message/', message_handler, {'emitter_format': 'json'}),
+    url(r'^message/', message_handler) #, {'emitter_format': 'json'}),
 )

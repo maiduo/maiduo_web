@@ -15,7 +15,7 @@ import os
 import utils
 
 class MessageTest(TestCase):
-    fixtures = ['users', 'oauthost.json']
+    fixtures = ['users', 'oauthost.json', 'activity.json']
     
     @override_settings(DEBUG=True)
     def setUp(self):
@@ -37,6 +37,7 @@ class MessageTest(TestCase):
         message_fields = {\
             "body": "The first.",
             'access_token': self.access_token,
+            'activity_id': 1,
         }
 
         rsp = self.client.post('/api/message/', message_fields)
@@ -45,8 +46,22 @@ class MessageTest(TestCase):
         msg = Message.objects.get(body="The first.")
         self.assertEquals("The first.", msg.body)
 
+    def test_create_text_message_empty_activity_id_and_subject(self):
+        message_fields = {\
+            "body": "The first.",
+            'access_token': self.access_token,
+        }
+
+        rsp = self.client.post('/api/message/', message_fields)
+        self.assertEquals(201, rsp.status_code)
+
+        msg = Message.objects.get(body="The first.")
+        self.assertEquals("The first.", msg.body)
+
+
     def test_create_message_and_activity(self):
         message_fields = {\
+            "activity_subject": "The first activity.",
             "body": "The first.",
             'access_token': self.access_token,
             "addons": open("resources/10x10.png")
