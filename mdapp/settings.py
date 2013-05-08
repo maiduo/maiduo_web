@@ -138,6 +138,7 @@ INSTALLED_APPS = (
     'ios_notifications',
     'oauthost',
     'md',
+    'gunicorn',
 )
 
 # A sample logging configuration. The only tangible logging
