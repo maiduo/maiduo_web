@@ -13,6 +13,12 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+MYSQL_HOST = os.getenv('HIMAIDUO_MYSQL_HOST', None)
+MYSQL_PORT = os.getenv('HIMAIDUO_MYSQL_PORT', 3306)
+MYSQL_NAME = os.getenv('HIMAIDUO_MYSQL_NAME', None)
+MYSQL_USER = os.getenv('HIMAIDUO_MYSQL_USER', None)
+MYSQL_PASS = os.getenv('HIMAIDUO_MYSQL_PASS', None)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
@@ -21,6 +27,19 @@ DATABASES = {
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+    }
+}
+
+if MYSQL_HOST:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': MYSQL_NAME,
+            'USER': MYSQL_USER,
+            'PASSWORD': MYSQL_PASS,
+            'HOST': MYSQL_HOST,
+            'PORT': MYSQL_PORT,
+        }
     }
 }
 

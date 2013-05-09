@@ -1,4 +1,5 @@
 django-ios-notifications
 south
+PIL
 -e hg+https://bitbucket.org/jespern/django-piston@7c90898#egg=django-piston
 -e git+https://github.com/idlesign/django-oauthost@1a00f09db9a6782b2fc18270b1a21599e9506d42#egg=django-oauthost
