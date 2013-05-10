@@ -28,6 +28,7 @@ class ActivityTest(TestCase):
 class OAuthTestCase(TestCase):
     @override_settings(DEBUG=True)
     def setUp(self):
+        self.client = Client()
         request_token = {\
             'client_id': '2dc5d858f1f441aa8e957b82ce248816',
             'username': 'test',
@@ -42,6 +43,22 @@ class OAuthTestCase(TestCase):
         self.access_token = json['access_token']
         self.refresh_token = json['refresh_token']
 
+
+class UserTest(TestCase):
+    
+    def setUp(self):
+        self.client = Client()
+
+    def test_create_user(self):
+        user_data = {\
+            "username": "13000000000",
+            "password": "13000000000"
+        }
+        rsp = self.client.post('/api/user/', user_data)
+        self.assertEquals(201, rsp.status_code)
+
+        user = User.objects.get(username="13000000000")
+        self.assertNotEquals(None, user)
 
 class MessageTest(OAuthTestCase):
     fixtures = ['users', 'oauthost.json', 'activity.json']

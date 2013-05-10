@@ -143,7 +143,6 @@ class ChatHandler(BaseHandler):
         }
         send_notification(activity.devices("dev", exclude=[request.user]), \
                           "dev", notification)
-
         return rc.CREATED
 
 class ChatsHandler(BaseHandler):
@@ -155,13 +154,16 @@ class ChatsHandler(BaseHandler):
         pass
 
 
-class User(BaseHandler):
+class UserHandler(BaseHandler):
     model = User
     allowed_method = ('POST',)
-    exclude = ('password',)
+    exclude = ('password', 'is_superuser', 'is_staff', 'email',)
 
     def create(self, request):
-        pass
+        username = request.POST.get("username", None)
+        password = request.POST.get("password", None)
+        user = User.objects.create_user(username=username, password=password)
+        return rc.CREATED
 
-    def read(self, request):
-        return Chat.objects.filter()
+    def read(self, request, user_id):
+        return User.objects.get(pk=1)
