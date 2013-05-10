@@ -101,12 +101,13 @@ def send_notification(devices, service, notification):
     cls_device = push_models.Device
     cls_apn_service = push_models.APNService
     
-    apns = cls.apns_service.objects.get(name=service)
+    apns = cls_apn_service.objects.get(name=service)
     notification.service = apns
     apns.push_notification_to_devices(notification, devices, chunk_size=200)
 
 def send_notification_with_tokens(tokens, service, notification):
-    devices = cls.device.objects.filter(token__in=tokens, service=apns)
+    cls_device = push_models.Device
+    devices = cls_device.objects.filter(token__in=tokens, service=apns)
     send_notification(devices, service, notification)
 
 class ChatHandler(BaseHandler):
@@ -134,6 +135,14 @@ class ChatHandler(BaseHandler):
         chat = Chat(user=request.user, activity=activity, text=text, \
                     ip=ip_address)
         chat.save()
+
+        notification = push_models.Notification(message=text)
+        notification.extra = {\
+            'activity_id': activity_id,
+            'chat_id': chat.id
+        }
+        send_notification(activity.devices("dev", exclude=[request.user]), \
+                          "dev", notification)
 
         return rc.CREATED
 

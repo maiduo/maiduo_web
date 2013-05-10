@@ -9,10 +9,13 @@ from django.utils import simplejson
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.test.client import Client
+from django.contrib.auth.models import User
 from pdb import Pdb, set_trace as bp
-from models import Message, Activity
+from models import Message, Activity, Chat
+import handlers
 import os
 import utils
+import mock
 
 class ActivityTest(TestCase):
     fixtures = ['users', 'activity.json', 'ios_notifications.json']
@@ -85,30 +88,34 @@ class MessageTest(OAuthTestCase):
         msg = Message.objects.get(body="The first.")
         self.assertEquals("The first.", msg.body)
 
-class ChatTest(TestCase):
-    @override_settings(DEBUG=True)
-    def setUp(self):
-        request_token = {\
-            'client_id': '2dc5d858f1f441aa8e957b82ce248816',
-            'username': 'test',
-            'password': '123123',
-            'grant_type': 'password',
-            'scope': '',
-        }
-        rsp = self.client.post('/api/token/', request_token)
-        self.assertEquals(200, rsp.status_code)
+class HandlerTest(TestCase):
+    def test_send_notification_with_token(self):
+        handlers.push_models = mock.MagicMock()
+        handlers.send_notification([], "dev", mock.MagicMock())
 
-        json = simplejson.loads(rsp.content)
-        self.access_token = json['access_token']
-        self.refresh_token = json['refresh_token']
+class ChatTest(TestCase):
+    fixtures = ['users', 'activity.json', 'ios_notifications.json']
 
     def test_send_message(self):
-        send_message_fields = {\
-            "activity_id": 1,
-            "text": "First sended chat message."
-        }
-        rsp = self.client.post('/api/chat/',  send_message_fields)
-        self.assertEquals(201, rsp.status_code)
+        handlers.push_models = mock.MagicMock()
+        handlers.utils = mock.MagicMock()
+        handlers.utils.get_client_ip.return_value = "127.0.0.1"
+        hd = handlers.ChatHandler()
+        request = mock.MagicMock()
+        request.user = User.objects.get(username='test')
+        request.POST = {"activity_id": 1, "text": "First chat message."}
+
+        def mock_and_assert_send_notification(devices, service, notification):
+            self.assertEquals(2, len(devices))
+
+        original_send_notification = handlers.send_notification
+        handlers.send_notification = mock_and_assert_send_notification
+        hd.create(request)
+        handlers.send_notification = original_send_notification
+
+        chat = Chat.objects.get(text="First chat message.")
+        self.assertNotEquals(None, chat)
+
 
 class UtilsTest(TestCase):
     def test_copy_file(self):

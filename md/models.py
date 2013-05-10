@@ -22,7 +22,7 @@ class Activity(models.Model):
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now_add=True, auto_now=True)
 
-    def devices(self, service):
+    def devices(self, service, exclude = None):
         apns = APNService.objects.get(name=service)
         # FIXME
         # 有严重的性能问题，现在的代码紧紧为了测试
@@ -31,8 +31,11 @@ class Activity(models.Model):
         # 有可能是错的，因为token和service的unique_together，并不代表service
         # 条件是唯一的
 
-        return [user.ios_devices.filter(service=apns)[0] \
-                for user in self.user.all()]
+        user_query_set = exclude and self.user.exclude(\
+                                        id__in=[user.id for user in exclude])\
+                                 or self.user.all()
+        return [user.ios_devices.filter(service=apns)[0]\
+                for user in user_query_set]
 
     def __unicode__(self):
         return self.subject
