@@ -6,6 +6,7 @@ from piston.handler import BaseHandler
 from piston.utils import rc, validate
 from models import Message, MessageAddOns, Activity, Chat
 from forms import MessageForm
+from django.db import IntegrityError
 from django.conf import settings
 from django.contrib.auth.models import User
 from os.path import basename, dirname, join
@@ -162,7 +163,13 @@ class UserHandler(BaseHandler):
     def create(self, request):
         username = request.POST.get("username", None)
         password = request.POST.get("password", None)
-        user = User.objects.create_user(username=username, password=password)
+        try:
+            user = User.objects.create_user(username=username,\
+                                            password=password)
+        except IntegrityError:
+            bad = rc.BAD_REQUEST
+            bad.write("User has exists.")
+            return bad
         return rc.CREATED
 
     def read(self, request, user_id):
