@@ -1,18 +1,23 @@
 #!/usr/bin/env python
 #! -*- encoding:utf-8 -*-
 
-from models import Message
 from oauthost.decorators import oauth_required
 from piston.handler import BaseHandler
 from piston.utils import rc, validate
-from models import Message, MessageAddOns, Activity
+from models import Message, MessageAddOns, Activity, Chat
 from forms import MessageForm
 from django.conf import settings
+from django.contrib.auth.models import User
 from os.path import basename, dirname, join
+from ios_notifications import models as push_models
 import os
 import utils
 import PIL.Image
 from pdb import set_trace as bp
+
+# 构建消息发送功能时，必须使用Mock的Notification相关对象，也就是说不能真的把消息
+# 推送出去，所以没有直接引入APNService等对象，而是引入模块，以方便在测试用例中替
+# 换
 
 class MessageHandler(BaseHandler):
     model = Message
@@ -54,7 +59,7 @@ class MessageHandler(BaseHandler):
             preview_size = (w, h)
 
         src.seek(0)
-        # utils.copy_file(src, preview_fd)
+
         preview_fd.seek(0)
         preview = PIL.Image.open(src)
         if w > 620:
@@ -64,11 +69,9 @@ class MessageHandler(BaseHandler):
         src.close()
         preview_fd.close()
         new_fd.close()
-
-        # MessageAddOns.objects.create(message=message, body=
         
 
-    def create(self, request, **kwargs):
+    def create(self, request):
         # pdb.set_trace()
         attrs = self.flatten_dict(request.POST)
         ip_address = utils.get_client_ip(request)
@@ -92,3 +95,64 @@ class MessageHandler(BaseHandler):
         msg.save()
         self._storage_message_image(request, msg)
         return rc.CREATED
+
+
+def send_notification(devices, service, notification):
+    cls_device = push_models.Device
+    cls_apn_service = push_models.APNService
+    
+    apns = cls.apns_service.objects.get(name=service)
+    notification.service = apns
+    apns.push_notification_to_devices(notification, devices, chunk_size=200)
+
+def send_notification_with_tokens(tokens, service, notification):
+    devices = cls.device.objects.filter(token__in=tokens, service=apns)
+    send_notification(devices, service, notification)
+
+class ChatHandler(BaseHandler):
+    model = Chat
+    allowed_method = ('GET', 'POST',)
+    exclude = ('id', 'ip', 'create_at', 'update_at',)
+
+    def create(self, request):
+        activity_id = request.POST.get("activity_id", 0)
+        try:
+            activity = Activity.objects.get(pk=activity_id)
+        except Acitivity.DoesNotExists:
+            activity = None
+        text = request.POST.get("text", "")
+        if not activity:
+            not_found = rc.NOT_FOUND
+            not_found.write("Activity id not found.")
+            return not_foud
+        
+        if "" == text:
+            empty = rc.BAD_REQUEST
+            empty.write("Text can not empty.")
+            return empty
+        ip_address = utils.get_client_ip(request)
+        chat = Chat(user=request.user, activity=activity, text=text, \
+                    ip=ip_address)
+        chat.save()
+
+        return rc.CREATED
+
+class ChatsHandler(BaseHandler):
+    model = Chat
+    allowed_method = ('GET',)
+    exclude = ('ip')
+
+    def read(request):
+        pass
+
+
+class User(BaseHandler):
+    model = User
+    allowed_method = ('POST',)
+    exclude = ('password',)
+
+    def create(self, request):
+        pass
+
+    def read(self, request):
+        return Chat.objects.filter()

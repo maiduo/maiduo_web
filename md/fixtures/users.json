@@ -16,5 +16,41 @@
       "email": "", 
       "date_joined": "2013-05-02T06:16:23.844Z"
     }
+  },
+  {
+    "pk": 2,
+    "model": "auth.user", 
+    "fields": {
+      "username": "test2", 
+      "first_name": "", 
+      "last_name": "", 
+      "is_active": true, 
+      "is_superuser": false, 
+      "is_staff": false, 
+      "last_login": "2013-05-02T06:16:23.844Z", 
+      "groups": [], 
+      "user_permissions": [], 
+      "password": "pbkdf2_sha256$10000$LQ0IRGsyrU9D$xHPFxj3HzVv2lUySjymb+WRO1DECa9+34Ck4l/jZVfE=", 
+      "email": "", 
+      "date_joined": "2013-05-02T06:16:23.844Z"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "auth.user", 
+    "fields": {
+      "username": "test3", 
+      "first_name": "", 
+      "last_name": "", 
+      "is_active": true, 
+      "is_superuser": false, 
+      "is_staff": false, 
+      "last_login": "2013-05-02T06:16:23.844Z", 
+      "groups": [], 
+      "user_permissions": [], 
+      "password": "pbkdf2_sha256$10000$LQ0IRGsyrU9D$xHPFxj3HzVv2lUySjymb+WRO1DECa9+34Ck4l/jZVfE=", 
+      "email": "", 
+      "date_joined": "2013-05-02T06:16:23.844Z"
+    }
   }
 ]

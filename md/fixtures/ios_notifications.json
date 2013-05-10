@@ -1,0 +1,50 @@
+[
+  {
+    "pk": 1,
+    "model": "ios_notifications.device",
+    "fields": {
+      "deactivated_at": null,
+      "users": [1],
+      "service": 1,
+      "os_version": "",
+      "last_notified_at": null,
+      "is_active": true,
+      "added_at": "2013-05-09T07:17:39Z",
+      "platform": "",
+      "token": "a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c27",
+      "display": ""
+    }
+  },
+  {
+    "pk": 2,
+    "model": "ios_notifications.device",
+    "fields": {
+      "deactivated_at": null,
+      "users": [2],
+      "service": 1,
+      "os_version": "",
+      "last_notified_at": null,
+      "is_active": true,
+      "added_at": "2013-05-09T07:17:39Z",
+      "platform": "",
+      "token": "a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c28",
+      "display": ""
+    }
+  },
+  {
+    "pk": 3,
+    "model": "ios_notifications.device",
+    "fields": {
+      "deactivated_at": null,
+      "users": [3],
+      "service": 1,
+      "os_version": "",
+      "last_notified_at": null,
+      "is_active": true,
+      "added_at": "2013-05-09T07:17:39Z",
+      "platform": "",
+      "token": "a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c29",
+      "display": ""
+    }
+  }
+]

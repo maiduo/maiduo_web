@@ -6,7 +6,7 @@
       "ip": "127.0.0.1", 
       "create_at": "2013-05-04T15:08:45.493Z", 
       "update_at": "2013-05-04T15:08:45.493Z", 
-      "user": 1, 
+      "user": [1, 2, 3],
       "subject": "The initialize."
     }
   }

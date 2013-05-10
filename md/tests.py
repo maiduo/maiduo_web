@@ -14,9 +14,15 @@ from models import Message, Activity
 import os
 import utils
 
-class MessageTest(TestCase):
-    fixtures = ['users', 'oauthost.json', 'activity.json']
-    
+class ActivityTest(TestCase):
+    fixtures = ['users', 'activity.json', 'ios_notifications.json']
+
+    def test_devices(self):
+        devices = Activity.objects.get(pk=1).devices("dev")
+        self.assertEquals(3, len(devices))
+        self.assertEquals("dev", devices[0].service.name)
+
+class OAuthTestCase(TestCase):
     @override_settings(DEBUG=True)
     def setUp(self):
         request_token = {\
@@ -32,6 +38,10 @@ class MessageTest(TestCase):
         json = simplejson.loads(rsp.content)
         self.access_token = json['access_token']
         self.refresh_token = json['refresh_token']
+
+
+class MessageTest(OAuthTestCase):
+    fixtures = ['users', 'oauthost.json', 'activity.json']
 
     def test_create_text_message(self):
         message_fields = {\
@@ -74,6 +84,31 @@ class MessageTest(TestCase):
 
         msg = Message.objects.get(body="The first.")
         self.assertEquals("The first.", msg.body)
+
+class ChatTest(TestCase):
+    @override_settings(DEBUG=True)
+    def setUp(self):
+        request_token = {\
+            'client_id': '2dc5d858f1f441aa8e957b82ce248816',
+            'username': 'test',
+            'password': '123123',
+            'grant_type': 'password',
+            'scope': '',
+        }
+        rsp = self.client.post('/api/token/', request_token)
+        self.assertEquals(200, rsp.status_code)
+
+        json = simplejson.loads(rsp.content)
+        self.access_token = json['access_token']
+        self.refresh_token = json['refresh_token']
+
+    def test_send_message(self):
+        send_message_fields = {\
+            "activity_id": 1,
+            "text": "First sended chat message."
+        }
+        rsp = self.client.post('/api/chat/',  send_message_fields)
+        self.assertEquals(201, rsp.status_code)
 
 class UtilsTest(TestCase):
     def test_copy_file(self):

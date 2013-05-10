@@ -1,11 +1,15 @@
 from django.conf.urls import patterns, url
 from piston.resource import Resource
-from handlers import MessageHandler
+from handlers import MessageHandler, ChatHandler, ChatsHandler
 from oauthost.utils import PistonAuthHelper
 import oauthost.urls
-# 
-message_handler = Resource(MessageHandler, \
-                           authentication=PistonAuthHelper(None))
+
+auth = PistonAuthHelper(None)
+message_handler = Resource(MessageHandler, authentication= auth)
+chat_handler = Resource(ChatHandler, authentication=auth)
+chats_handler = Resource(ChatsHandler, authentication=auth)
 urlpatterns = oauthost.urls.urlpatterns + patterns('',
-    url(r'^message/', message_handler) #, {'emitter_format': 'json'}),
+    url(r'^message/', message_handler),
+    url(r'^chat/', chat_handler),
+    url(r'^chats/', chats_handler),
 )
