@@ -167,7 +167,8 @@ class AuthenticationHandler(BaseHandler):
             "service__name": service_name
         }
         not_bind = push_models.Device.objects.filter(**query).count() == 0
-        if not_bind:
+        empty_token = '' == device_token
+        if not_bind and not empty_token:
             service = push_models.APNService.objects.get(name=service_name)
             kw_device = {\
                 "token": device_token,
@@ -185,7 +186,8 @@ class AuthenticationHandler(BaseHandler):
         if auth_success:
             user = User.objects.get(username=request.POST.get("username"))
             self.bind_user_and_device_token(user,\
-                                            request.POST.get("device_token"),\
+                                            request.POST.get("device_token",
+                                                             ""),\
                                             request.POST.get("service", "dev"))
 
         JSON['user'] = user

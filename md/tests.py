@@ -152,10 +152,28 @@ class AuthenticationHandlerTest(TestCase):
             'device_token': '<token>',
         }
         rsp = self.client.post('/api/authentication/', request_token)
-        print rsp.content
         self.assertEquals(200, rsp.status_code)
+        user = User.objects.get(username="test")
+        devices = Device.objects.filter(users=user, token="<token>",\
+                                        service__name="dev").count()
+        self.assertEquals(1, devices)
 
-        json = simplejson.loads(rsp.content)
+    @override_settings(DEBUG=True)
+    def test_authenticate_empty_token(self):
+        request_token = {\
+            'client_id': '2dc5d858f1f441aa8e957b82ce248816',
+            'username': 'test',
+            'password': '123123',
+            'grant_type': 'password',
+            'scope': '',
+            'device_token': '',
+        }
+        rsp = self.client.post('/api/authentication/', request_token)
+        self.assertEquals(200, rsp.status_code)
+        user = User.objects.get(username="test")
+        devices = Device.objects.filter(users=user, token="",\
+                                        service__name="dev").count()
+        self.assertEquals(0, devices)
 
 class ChatTest(TestCase):
     fixtures = ['users', 'activity.json', 'ios_notifications.json']
