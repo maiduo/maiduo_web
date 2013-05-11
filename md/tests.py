@@ -55,7 +55,8 @@ class UserTest(TestCase):
             "password": "13000000000"
         }
         rsp = self.client.post('/api/user/', user_data)
-        self.assertEquals(201, rsp.status_code)
+        self.assertEquals(200, rsp.status_code)
+        print rsp.content
 
         user = User.objects.get(username="13000000000")
         self.assertNotEquals(None, user)

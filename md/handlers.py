@@ -158,7 +158,8 @@ class ChatsHandler(BaseHandler):
 class UserHandler(BaseHandler):
     model = User
     allowed_method = ('POST',)
-    exclude = ('password', 'is_superuser', 'is_staff', 'email',)
+    exclude = ('password', 'is_superuser', 'is_staff', 'email', 'is_active',
+               'last_login', 'date_joined', 'last_name', )
 
     def create(self, request):
         username = request.POST.get("username", None)
@@ -170,7 +171,7 @@ class UserHandler(BaseHandler):
             bad = rc.BAD_REQUEST
             bad.write("User has exists.")
             return bad
-        return rc.CREATED
+        return user
 
-    def read(self, request, user_id):
-        return User.objects.get(pk=1)
+    def read(self, request, username):
+        return User.objects.get(username=1)

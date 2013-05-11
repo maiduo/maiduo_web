@@ -13,7 +13,7 @@ urlpatterns = oauthost.urls.urlpatterns + patterns('',
     url(r'^authentication/$', 'oauthost.auth_views.endpoint_token',\
         name='oauthost_token'),
     url(r'^user/$', user_handler),
-    url(r'^user/(?P<user_id>[^/]+)/$', user_handler),
+    url(r'^user/(?P<username>[^/]+)/$', user_handler),
     url(r'^message/$', message_handler),
     url(r'^chat/$', chat_handler),
     url(r'^chats/$', chats_handler),
