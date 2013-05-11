@@ -10,6 +10,7 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.test.client import Client
 from django.contrib.auth.models import User
+from django.conf import settings
 from pdb import Pdb, set_trace as bp
 from models import Message, Activity, Chat
 import handlers
@@ -110,6 +111,28 @@ class HandlerTest(TestCase):
     def test_send_notification_with_token(self):
         handlers.push_models = mock.MagicMock()
         handlers.send_notification([], "dev", mock.MagicMock())
+
+class AuthenticationHandlerTest(TestCase):
+    fixtures = ['users', 'activity.json', 'ios_notifications.json',\
+                'oauthost.json']
+
+    def setUp(self):
+        self.client = Client()
+
+    @override_settings(DEBUG=True)
+    def test_authenticate(self):
+        request_token = {\
+            'client_id': '2dc5d858f1f441aa8e957b82ce248816',
+            'username': 'test',
+            'password': '123123',
+            'grant_type': 'password',
+            'scope': '',
+            'device_token': '<token>',
+        }
+        rsp = self.client.post('/api/authentication/', request_token)
+        self.assertEquals(200, rsp.status_code)
+
+        json = simplejson.loads(rsp.content)
 
 class ChatTest(TestCase):
     fixtures = ['users', 'activity.json', 'ios_notifications.json']

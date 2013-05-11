@@ -2,12 +2,14 @@
 #! -*- encoding:utf-8 -*-
 
 from oauthost.decorators import oauth_required
+from oauthost import auth_views
 from piston.handler import BaseHandler
 from piston.utils import rc, validate
 from models import Message, MessageAddOns, Activity, Chat
 from forms import MessageForm
 from django.db import IntegrityError
 from django.conf import settings
+from django.utils import simplejson
 from django.contrib.auth.models import User
 from os.path import basename, dirname, join
 from ios_notifications import models as push_models
@@ -118,11 +120,12 @@ class ChatHandler(BaseHandler):
 
     def create(self, request):
         activity_id = request.POST.get("activity_id", 0)
+        text = request.POST.get("text", "")
+        service = request.POST.get("service", "dev")
         try:
             activity = Activity.objects.get(pk=activity_id)
         except Acitivity.DoesNotExists:
             activity = None
-        text = request.POST.get("text", "")
         if not activity:
             not_found = rc.NOT_FOUND
             not_found.write("Activity id not found.")
@@ -142,7 +145,7 @@ class ChatHandler(BaseHandler):
             'activity_id': activity_id,
             'chat_id': chat.id
         }
-        send_notification(activity.devices("dev", exclude=[request.user]), \
+        send_notification(activity.devices(service, exclude=[request.user]), \
                           "dev", notification)
         return rc.CREATED
 
@@ -154,6 +157,32 @@ class ChatsHandler(BaseHandler):
     def read(request):
         pass
 
+class AuthenticationHandler(BaseHandler):
+    allowed_method =('POST',)
+
+    def create(self, request):
+        rsp = auth_views.endpoint_token(request)
+        JSON = simplejson.loads(rsp.content)
+        access_token, refresh_token = JSON.get("access_token", None), \
+                                      JSON.get("refresh_token", None)
+
+        if access_token and refresh_token:
+            service = request.POST.get("service", "dev")
+            device_token = request.POST.get("device_token", None)
+            if device_token:
+                user = User.objects.get(username=request.POST.get("username"))
+                device_tokens = user.ios_devices.filter(token=device_token)
+                if 0 == len(device_token):
+                    new_token = push_models.Device(token=device_token, device
+                    user.ios_devices.add(
+                #d1 = push_models.Device.objects.filter(service_name=service)
+
+                device = push_models.Device.objects.get(service_name=service,\
+                                                        token=device_token)
+                bp()
+                print device
+                bp()
+        pass
 
 class UserHandler(BaseHandler):
     model = User
