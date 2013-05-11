@@ -25,8 +25,8 @@ class Activity(models.Model):
     def devices(self, service, exclude = None):
         apns = APNService.objects.get(name=service)
         # FIXME
-        # 有严重的性能问题，现在的代码紧紧为了测试
-        # 应该优化查询一次从数据库种查询到所有数据
+        # 有严重的性能问题，现在的代码仅仅为了测试
+        # 优化一次从数据库种查询到所有数据
         # 思路是在DeivceManager中提供一个返回apns的过滤
         # 有可能是错的，因为token和service的unique_together，并不代表service
         # 条件是唯一的

@@ -12,6 +12,7 @@ from django.test.client import Client
 from django.contrib.auth.models import User
 from django.conf import settings
 from pdb import Pdb, set_trace as bp
+from ios_notifications.models import Device
 from models import Message, Activity, Chat
 import handlers
 import os
@@ -119,6 +120,27 @@ class AuthenticationHandlerTest(TestCase):
     def setUp(self):
         self.client = Client()
 
+    def test_bind_user_and_device_token_not_exists_token(self):
+        device_token = "<token>"
+        auth = handlers.AuthenticationHandler()
+        user = User.objects.get(username="test")
+        auth.bind_user_and_device_token(user, device_token, "dev")
+
+        devices = Device.objects.filter(users=user, token=device_token,\
+                                        service__name="dev").count()
+        self.assertEquals(1, devices)
+
+    def test_bind_user_and_device_token(self):
+        device_token = "a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c27"
+        auth = handlers.AuthenticationHandler()
+        user = User.objects.get(username="test")
+        auth.bind_user_and_device_token(user, device_token, "dev")
+
+        devices = Device.objects.filter(users=user, token=device_token,\
+                                        service__name="dev").count()
+        self.assertEquals(1, devices)
+                                
+
     @override_settings(DEBUG=True)
     def test_authenticate(self):
         request_token = {\
@@ -130,6 +152,7 @@ class AuthenticationHandlerTest(TestCase):
             'device_token': '<token>',
         }
         rsp = self.client.post('/api/authentication/', request_token)
+        print rsp.content
         self.assertEquals(200, rsp.status_code)
 
         json = simplejson.loads(rsp.content)

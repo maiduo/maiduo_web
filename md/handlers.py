@@ -160,29 +160,37 @@ class ChatsHandler(BaseHandler):
 class AuthenticationHandler(BaseHandler):
     allowed_method =('POST',)
 
+    def bind_user_and_device_token(self, user, device_token, service_name):
+        query = {\
+            "users__id": user.id,
+            "token": device_token,
+            "service__name": service_name
+        }
+        not_bind = push_models.Device.objects.filter(**query).count() == 0
+        if not_bind:
+            service = push_models.APNService.objects.get(name=service_name)
+            kw_device = {\
+                "token": device_token,
+                "service": service,
+            }
+            device = push_models.Device.objects.create(**kw_device)
+            user.ios_devices.add(device)
+
+
     def create(self, request):
         rsp = auth_views.endpoint_token(request)
         JSON = simplejson.loads(rsp.content)
-        access_token, refresh_token = JSON.get("access_token", None), \
-                                      JSON.get("refresh_token", None)
 
-        if access_token and refresh_token:
-            service = request.POST.get("service", "dev")
-            device_token = request.POST.get("device_token", None)
-            if device_token:
-                user = User.objects.get(username=request.POST.get("username"))
-                device_tokens = user.ios_devices.filter(token=device_token)
-                if 0 == len(device_token):
-                    new_token = push_models.Device(token=device_token, device
-                    user.ios_devices.add(
-                #d1 = push_models.Device.objects.filter(service_name=service)
+        auth_success = JSON.get("access_token", None) and True or False
+        if auth_success:
+            user = User.objects.get(username=request.POST.get("username"))
+            self.bind_user_and_device_token(user,\
+                                            request.POST.get("device_token"),\
+                                            request.POST.get("service", "dev"))
 
-                device = push_models.Device.objects.get(service_name=service,\
-                                                        token=device_token)
-                bp()
-                print device
-                bp()
-        pass
+        JSON['user'] = user
+        return JSON
+
 
 class UserHandler(BaseHandler):
     model = User
