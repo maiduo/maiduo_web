@@ -19,15 +19,10 @@ import os
 import utils
 import mock
 
-class ActivityTest(TestCase):
-    fixtures = ['users', 'activity.json', 'ios_notifications.json']
-
-    def test_devices(self):
-        devices = Activity.objects.get(pk=1).devices("dev")
-        self.assertEquals(3, len(devices))
-        self.assertEquals("dev", devices[0].service.name)
-
 class OAuthTestCase(TestCase):
+    fixtures = ['users', 'activity.json', 'ios_notifications.json',\
+                'oauthost.json']
+                
     @override_settings(DEBUG=True)
     def setUp(self):
         self.client = Client()
@@ -45,6 +40,36 @@ class OAuthTestCase(TestCase):
         self.access_token = json['access_token']
         self.refresh_token = json['refresh_token']
 
+class ActivityTest(TestCase):
+    #fixtures = ['users', 'activity.json', 'ios_notifications.json']
+
+    def test_devices(self):
+        devices = Activity.objects.get(pk=1).devices("dev")
+        self.assertEquals(3, len(devices))
+        self.assertEquals("dev", devices[0].service.name)
+
+class ActivityHandlerTest(OAuthTestCase):
+    def test_read(self):
+        activity_url = '/api/activity/?access_token=%s' % self.access_token
+        rsp = self.client.get(activity_url)
+        activities = simplejson.loads(rsp.content)
+        self.assertEquals(200, rsp.status_code)
+        self.assertEquals(1, len(activities))
+        self.assertEquals(1, activities[0]['owner']['id'])
+
+
+    def test_create(self):
+        activity_subject_name = "The second activity."
+        request_data = {
+            "subject": activity_subject_name,
+            "access_token": self.access_token
+        }
+        rsp = self.client.post('/api/activity/', request_data)
+        print rsp.content
+        self.assertEquals(200, rsp.status_code)
+
+        activity = Activity.objects.get(subject=subject)
+        self.assertEquals(activity_subject_name, activity.subject)
 
 class UserTest(TestCase):
     
@@ -152,6 +177,7 @@ class AuthenticationHandlerTest(TestCase):
             'device_token': '<token>',
         }
         rsp = self.client.post('/api/authentication/', request_token)
+
         self.assertEquals(200, rsp.status_code)
         user = User.objects.get(username="test")
         devices = Device.objects.filter(users=user, token="<token>",\

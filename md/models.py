@@ -22,6 +22,10 @@ class Activity(models.Model):
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now_add=True, auto_now=True)
 
+    class Meta:
+        ordering = ['-create_at']
+
+
     def devices(self, service, exclude = None):
         apns = APNService.objects.get(name=service)
         # FIXME

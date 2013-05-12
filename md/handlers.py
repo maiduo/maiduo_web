@@ -194,6 +194,27 @@ class AuthenticationHandler(BaseHandler):
         return JSON
 
 
+class ActivityHandler(BaseHandler):
+    model = Activity
+    allowed_method = ('POST', 'READ')
+    fields = ('id', 'subject', 'owner', 'user',)
+    exclude = ('ip', 'create_at', 'update_at')
+
+    def read(self, request):
+        return Activity.objects.filter(user=request.user)
+
+    def create(self, request):
+        subject = request.POST.get("subject", "")
+        ip_address = utils.get_client_ip(request)
+        kw_activity = {
+            "subject": subject,
+            "owner": request.user,
+            "ip": ip_address
+        }
+        activity = Activity.objects.create(**kw_activity)
+        activity.user.add(request.user)
+        return activity
+
 class UserHandler(BaseHandler):
     model = User
     allowed_method = ('POST',)
@@ -213,4 +234,4 @@ class UserHandler(BaseHandler):
         return user
 
     def read(self, request, username):
-        return User.objects.get(username=1)
+        return User.objects.get(username=username)
