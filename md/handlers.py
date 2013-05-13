@@ -87,7 +87,7 @@ class MessageHandler(BaseHandler):
             return rc.NOT_FOUND
 
         msg = Message(user=request.user, activity=activity, body=attrs['body'],\
-                      ip=ip_address)
+                      ip=ip_address, message_type="T")
         msg.save()
         #self._storage_message_image(request, msg)
         push_text = message="%s:%s" % (request.user.first_name, message_body)
