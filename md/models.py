@@ -55,15 +55,15 @@ class Message(models.Model):
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now_add=True, auto_now=True)
 
-class MessageAddOns(models.Model):
+class MessageAddon(models.Model):
     message = models.ForeignKey(Message)
-    body = models.CharField(max_length=255)
+    extra = models.CharField(max_length=255, default="", null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.message.addons += 1
         self.message.save()
 
-        super(MessageAddOns, self).save(*args, **kwargs)
+        super(MessageAddon, self).save(*args, **kwargs)
 
 class Chat(models.Model):
     user = models.ForeignKey(User)

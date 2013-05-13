@@ -87,9 +87,13 @@ class UserHandlerTest(TestCase):
         self.assertNotEquals(None, user)
 
 class MessageHandlerTest(OAuthTestCase):
-    fixtures = ['users', 'oauthost.json', 'activity.json', 'ios_notifications.json']
+    fixtures = ['users', 'oauthost.json', 'activity.json', \
+                'ios_notifications.json']
 
     def test_create_text_message(self):
+        ios_notifications_models = handlers.push_models
+        utils_module = handlers.utils
+
         handlers.push_models = mock.MagicMock()
         handlers.utils = mock.MagicMock()
         handlers.utils.get_client_ip.return_value = "127.0.0.1"
@@ -109,11 +113,33 @@ class MessageHandlerTest(OAuthTestCase):
         msg = Message.objects.get(body="Message.")
         self.assertNotEquals(None, msg)
 
+        handlers.push_models = ios_notifications_models
+        handlers.utils = utils_module
+
+class MessageAddonHandlerTest(OAuthTestCase):
+    fixtures = ['users', 'oauthost.json', 'activity.json', \
+                'ios_notifications.json']
+
+    def test_create(self):
+        attachment = file("resources/10x10.png", "r")
+        addons_data = {\
+            "message_id": 1,
+            "access_token": self.access_token,
+            "attachment": attachment
+        }
+        rsp = self.client.post("/api/message/addon/", addons_data)
+        self.assertEquals(200, rsp.status_code)
+        attachment.close()
+
 
 class HandlerTest(TestCase):
     def test_send_notification_with_token(self):
+        ios_notifications_models = handlers.push_models
+
         handlers.push_models = mock.MagicMock()
         handlers.send_notification([], "dev", mock.MagicMock())
+
+        handlers.push_models = ios_notifications_models
 
 class AuthenticationHandlerTest(TestCase):
     fixtures = ['users', 'activity.json', 'ios_notifications.json',\
@@ -191,6 +217,9 @@ class ChatTest(TestCase):
     fixtures = ['users', 'activity.json', 'ios_notifications.json']
 
     def test_send_message(self):
+        ios_notifications_models = handlers.push_models
+        utils_module = handlers.utils
+
         handlers.push_models = mock.MagicMock()
         handlers.utils = mock.MagicMock()
         handlers.utils.get_client_ip.return_value = "127.0.0.1"
@@ -209,6 +238,9 @@ class ChatTest(TestCase):
 
         chat = Chat.objects.get(text="First chat message.")
         self.assertNotEquals(None, chat)
+
+        handlers.push_models = ios_notifications_models
+        handlers.utils = utils_module
 
 
 class UtilsTest(TestCase):

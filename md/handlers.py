@@ -5,7 +5,7 @@ from oauthost.decorators import oauth_required
 from oauthost import auth_views
 from piston.handler import BaseHandler
 from piston.utils import rc, validate
-from models import Message, MessageAddOns, Activity, Chat
+from models import Message, MessageAddon, Activity, Chat
 from forms import MessageForm
 from django.db import IntegrityError
 from django.conf import settings
@@ -32,47 +32,7 @@ class MessageHandler(BaseHandler):
 
     #@oauth_required(scope_auto=True)
     #@validate(MessageForm)
-    def _storage_message_image(self, request, message):
-        src = request.FILES.get('addons', None)
-        bp()
-        if not src:
-            return
 
-        ids = (message.id % 1000, message.id)
-        new_path = "user/img/%d/%d.jpg" % ids
-        preview_path = "user/img/%d/%d_preview.jpg" % ids
-        media_root = settings.MEDIA_ROOT
-        try:
-            os.makedirs(dirname(join(media_root, new_path)))
-        except OSError:
-            pass
-        new_fd = file(os.path.join(media_root, new_path), "w+")
-        preview_fd = file(os.path.join(media_root, preview_path), "w+")
-
-        utils.copy_file(src, new_fd)
-        new_fd.seek(0)
-        original = PIL.Image.open(new_fd)
-        w, h = original.size
-        if not "JPEG" == original.format:
-            original.save(new_fd.name, "JPEG")
-        new_fd.close()
-
-        if w > 620:
-            preview_size = (620, h * (w / 620.0))
-        else:
-            preview_size = (w, h)
-
-        src.seek(0)
-
-        preview_fd.seek(0)
-        preview = PIL.Image.open(src)
-        if w > 620:
-            preview.thumbnail(preview_size, PIL.Image.ANTIALIAS)
-        preview.save(preview_fd.name, "JPEG")
-
-        src.close()
-        preview_fd.close()
-        new_fd.close()
         
 
     def create(self, request):
@@ -99,6 +59,78 @@ class MessageHandler(BaseHandler):
         devices = activity.devices(service, exclude=[request.user])
         send_notification(devices, service, notification)
         return msg
+
+class MessageAddonHandler(BaseHandler):
+    allowed_method = ("POST", "GET",)
+    fields = ("id", "extra",)
+    def _storage_message_image(self, src, message_addon):
+        if not src:
+            return
+        ids = (message_addon.id % 1000, message_addon.id)
+        origin_path = "user/img/%d/%d.jpg" % ids
+        preview_path = "user/img/%d/%d_preview.jpg" % ids
+        media_root = settings.MEDIA_ROOT
+        try:
+            os.makedirs(dirname(join(media_root, origin_path)))
+        except OSError:
+            pass
+
+        origin_fd = file(os.path.join(media_root, origin_path), "w+")
+        preview_fd = file(os.path.join(media_root, preview_path), "w+")
+
+        utils.copy_file(src, origin_fd)
+        origin_fd.seek(0)
+        original = PIL.Image.open(origin_fd)
+        w, h = original.size
+        if not "JPEG" == original.format:
+            original.save(origin_fd.name, "JPEG")
+        origin_fd.close()
+
+        if w > 620:
+            preview_size = (620, h * (w / 620.0))
+        else:
+            preview_size = (w, h)
+
+        src.seek(0)
+
+        preview_fd.seek(0)
+        preview = PIL.Image.open(src)
+        if w > 620:
+            preview.thumbnail(preview_size, PIL.Image.ANTIALIAS)
+        preview.save(preview_fd.name, "JPEG")
+
+        src.close()
+        preview_fd.close()
+        origin_fd.close()
+
+
+        # Extra
+        
+        message_addon.extra = simplejson.dumps({\
+            "preview_width": preview_size[0],
+            "preview_height": preview_size[1],
+            "preview_path": preview_path,
+            "origin_width": w,
+            "origin_height": h,
+            "origin_path": origin_path
+        })
+        message_addon.save()
+
+    def create(self, request):
+        message_id = request.POST.get("message_id", 0)
+        extra = request.POST.get("extra", "{}")
+        try:
+            message = Message.objects.get(pk=message_id)
+        except Message.DoesNotExist:
+            return rc.NOT_FOUND
+
+
+        addon = MessageAddon(message=message, extra=extra)
+        addon.save()
+
+        self._storage_message_image(request.FILES['attachment'], addon)
+
+        return addon
 
 
 def send_notification(devices, service, notification):
