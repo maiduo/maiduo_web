@@ -147,6 +147,8 @@ if 'posix' == os.name:
     APPS = (
         'gunicorn',
     )
+else:
+    APPS = ()
 
 INSTALLED_APPS = (
     'django.contrib.auth',
