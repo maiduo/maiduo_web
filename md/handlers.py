@@ -90,8 +90,8 @@ class MessageHandler(BaseHandler):
                       ip=ip_address, message_type="T")
         msg.save()
         #self._storage_message_image(request, msg)
-        push_text = message="%s:%s" % (request.user.first_name, message_body)
-        notification = push_models.Notification(push_text)
+        push_text = u"%s:%s" % (request.user.first_name, message_body)
+        notification = push_models.Notification(message=push_text)
         notification.extra = {\
             "activity_id": activity_id,
             "message_id": msg.id
