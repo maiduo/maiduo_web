@@ -50,6 +50,7 @@ class Message(models.Model):
     message_type = models.CharField(u"Type", choices=MESSAGE_TYPE_CHOICES, \
                                     default="Text", max_length=1)
     body = models.TextField()
+    addons = models.IntegerField(default=0)
     ip = models.GenericIPAddressField('IPv4')
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now_add=True, auto_now=True)
@@ -57,6 +58,12 @@ class Message(models.Model):
 class MessageAddOns(models.Model):
     message = models.ForeignKey(Message)
     body = models.CharField(max_length=255)
+
+    def save(self, *args, **kwargs):
+        self.message.addons += 1
+        self.message.save()
+
+        super(MessageAddOns, self).save(*args, **kwargs)
 
 class Chat(models.Model):
     user = models.ForeignKey(User)
