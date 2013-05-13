@@ -107,7 +107,7 @@ def send_notification(devices, service, notification):
     
     apns = cls_apn_service.objects.get(name=service)
     notification.service = apns
-    apns.push_notification_to_devices(notification, devices, chunk_size=200)
+    apns.push_notification_to_devices(notification, devices)
 
 def send_notification_with_tokens(tokens, service, notification):
     cls_device = push_models.Device
