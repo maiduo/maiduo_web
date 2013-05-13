@@ -143,6 +143,11 @@ TEMPLATE_CONTEXT_PROCESSORS = (\
     'django.core.context_processors.request',
 )
 
+if 'posix' == os.name:
+    APPS = (
+        'gunicorn',
+    )
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -156,8 +161,7 @@ INSTALLED_APPS = (
     'ios_notifications',
     'oauthost',
     'md',
-    'gunicorn',
-)
+) + APPS
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
