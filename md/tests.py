@@ -70,7 +70,7 @@ class ActivityHandlerTest(OAuthTestCase):
         activity = Activity.objects.get(subject=activity_subject_name)
         self.assertEquals(activity_subject_name, activity.subject)
 
-class UserTest(TestCase):
+class UserHandlerTest(TestCase):
     
     def setUp(self):
         self.client = Client()
@@ -86,21 +86,28 @@ class UserTest(TestCase):
         user = User.objects.get(username="13000000000")
         self.assertNotEquals(None, user)
 
-class MessageTest(OAuthTestCase):
-    fixtures = ['users', 'oauthost.json', 'activity.json']
+class MessageHandlerTest(OAuthTestCase):
+    fixtures = ['users', 'oauthost.json', 'activity.json', 'ios_notifications.json']
 
     def test_create_text_message(self):
-        message_fields = {\
-            "body": "The first.",
-            'access_token': self.access_token,
-            'activity_id': 1,
-        }
+        handlers.push_models = mock.MagicMock()
+        handlers.utils = mock.MagicMock()
+        handlers.utils.get_client_ip.return_value = "127.0.0.1"
+        hd = handlers.MessageHandler()
+        request = mock.MagicMock()
+        request.user = User.objects.get(username='test')
+        request.POST = {"activity_id": 1, "body": "Message."}
 
-        rsp = self.client.post('/api/message/', message_fields)
-        self.assertEquals(201, rsp.status_code)
+        def mock_and_assert_send_notification(devices, service, notification):
+            self.assertEquals(2, len(devices))
 
-        msg = Message.objects.get(body="The first.")
-        self.assertEquals("The first.", msg.body)
+        original_send_notification = handlers.send_notification
+        handlers.send_notification = mock_and_assert_send_notification
+        hd.create(request)
+        handlers.send_notification = original_send_notification
+
+        msg = Message.objects.get(body="Message.")
+        self.assertNotEquals(None, msg)
 
 
 class HandlerTest(TestCase):

@@ -34,6 +34,7 @@ class MessageHandler(BaseHandler):
     #@validate(MessageForm)
     def _storage_message_image(self, request, message):
         src = request.FILES.get('addons', None)
+        bp()
         if not src:
             return
 
@@ -79,7 +80,7 @@ class MessageHandler(BaseHandler):
         ip_address = utils.get_client_ip(request)
         message_body = attrs.get("body", None)
         activity_id = attrs.get("activity_id", 0)
-        print request.POST.get('activity')
+        service = attrs.get("service", "dev")
         try:
             activity = Activity.objects.get(pk=activity_id)
         except Activity.DoesNotExist:
@@ -88,8 +89,16 @@ class MessageHandler(BaseHandler):
         msg = Message(user=request.user, activity=activity, body=attrs['body'],\
                       ip=ip_address)
         msg.save()
-        self._storage_message_image(request, msg)
-        return rc.CREATED
+        #self._storage_message_image(request, msg)
+        push_text = message="%s:%s" % (request.user.first_name, message_body)
+        notification = push_models.Notification(push_text)
+        notification.extra = {\
+            "activity_id": activity_id,
+            "message_id": msg.id
+        }
+        devices = activity.devices(service, exclude=[request.user])
+        send_notification(devices, service, notification)
+        return msg
 
 
 def send_notification(devices, service, notification):
