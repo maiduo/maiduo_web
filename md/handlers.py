@@ -75,24 +75,16 @@ class MessageHandler(BaseHandler):
         
 
     def create(self, request):
-        # pdb.set_trace()
         attrs = self.flatten_dict(request.POST)
         ip_address = utils.get_client_ip(request)
         message_body = attrs.get("body", None)
-        activity_subject = attrs.get("activity_subject", None)
-        activity_id = attrs.get("acitivity_id", None)
-        activity = None
-        if not activity_id and ("" == activity_subject or not activity_subject):
-            activity_subject = message_body[:20]
-        if activity_subject:
-            activity = Activity(user=request.user, subject=activity_subject,\
-                                ip=ip_address)
-            activity.save()
-        if (not activity) and activity_id:
-            activity_id = attrs.get("activity_id", None)
-            if not activity_id:
-                return rc.NOT_FOUND
+        activity_id = attrs.get("activity_id", 0)
+        print request.POST.get('activity')
+        try:
             activity = Activity.objects.get(pk=activity_id)
+        except Activity.DoesNotExist:
+            return rc.NOT_FOUND
+
         msg = Message(user=request.user, activity=activity, body=attrs['body'],\
                       ip=ip_address)
         msg.save()

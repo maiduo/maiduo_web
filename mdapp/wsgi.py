@@ -14,6 +14,12 @@ framework.
 
 """
 import os
+from os.path import abspath, join, dirname
+import sys
+
+WSGI_DIR = dirname(abspath(__file__))
+PROJECT_DIR = join(WSGI_DIR, "..")
+sys.path.append(PROJECT_DIR)
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mdapp.settings")
 

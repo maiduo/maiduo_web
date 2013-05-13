@@ -41,7 +41,7 @@ class OAuthTestCase(TestCase):
         self.refresh_token = json['refresh_token']
 
 class ActivityTest(TestCase):
-    #fixtures = ['users', 'activity.json', 'ios_notifications.json']
+    fixtures = ['users', 'activity.json', 'ios_notifications.json']
 
     def test_devices(self):
         devices = Activity.objects.get(pk=1).devices("dev")
@@ -65,10 +65,9 @@ class ActivityHandlerTest(OAuthTestCase):
             "access_token": self.access_token
         }
         rsp = self.client.post('/api/activity/', request_data)
-        print rsp.content
         self.assertEquals(200, rsp.status_code)
 
-        activity = Activity.objects.get(subject=subject)
+        activity = Activity.objects.get(subject=activity_subject_name)
         self.assertEquals(activity_subject_name, activity.subject)
 
 class UserTest(TestCase):
@@ -83,7 +82,6 @@ class UserTest(TestCase):
         }
         rsp = self.client.post('/api/user/', user_data)
         self.assertEquals(200, rsp.status_code)
-        print rsp.content
 
         user = User.objects.get(username="13000000000")
         self.assertNotEquals(None, user)
@@ -104,34 +102,6 @@ class MessageTest(OAuthTestCase):
         msg = Message.objects.get(body="The first.")
         self.assertEquals("The first.", msg.body)
 
-    def test_create_text_message_empty_activity_id_and_subject(self):
-        message_fields = {\
-            "body": "The second.",
-            'access_token': self.access_token,
-        }
-
-        rsp = self.client.post('/api/message/', message_fields)
-        self.assertEquals(201, rsp.status_code)
-
-        msg = Message.objects.get(body="The second.")
-        self.assertEquals("The second.", msg.body)
-        
-        activity = Activity.objects.get(subject=msg.body)
-
-
-    def test_create_message_and_activity(self):
-        message_fields = {\
-            "activity_subject": "The first activity.",
-            "body": "The first.",
-            'access_token': self.access_token,
-            "addons": open("resources/10x10.png")
-        }
-
-        rsp = self.client.post('/api/message/', message_fields)
-        self.assertEquals(201, rsp.status_code)
-
-        msg = Message.objects.get(body="The first.")
-        self.assertEquals("The first.", msg.body)
 
 class HandlerTest(TestCase):
     def test_send_notification_with_token(self):
