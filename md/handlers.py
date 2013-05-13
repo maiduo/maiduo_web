@@ -175,7 +175,10 @@ class AuthenticationHandler(BaseHandler):
                 "token": device_token,
                 "service": service,
             }
-            device = push_models.Device.objects.create(**kw_device)
+            try:
+                device = push_models.Device.objects.get(**kw_device)
+            except push_models.Device.DoesNotExist:
+                device = push_models.Device.objects.create(**kw_device)
             user.ios_devices.add(device)
 
 

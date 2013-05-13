@@ -142,6 +142,15 @@ class AuthenticationHandlerTest(TestCase):
                                         service__name="dev").count()
         self.assertEquals(1, devices)
                                 
+    def test_bind_user_and_device_token_but_token_exist(self):
+        device_token = "a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c30"
+        auth = handlers.AuthenticationHandler()
+        user = User.objects.get(username="test")
+        auth.bind_user_and_device_token(user, device_token, "dev")
+
+        devices = Device.objects.filter(users=user, token=device_token,\
+                                        service__name="dev").count()
+        self.assertEquals(1, devices)
 
     @override_settings(DEBUG=True)
     def test_authenticate(self):

@@ -46,5 +46,21 @@
       "token": "a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c29",
       "display": ""
     }
+  },
+  {
+    "pk": 4,
+    "model": "ios_notifications.device",
+    "fields": {
+      "deactivated_at": null,
+      "users": [],
+      "service": 1,
+      "os_version": "",
+      "last_notified_at": null,
+      "is_active": true,
+      "added_at": "2013-05-09T07:17:39Z",
+      "platform": "",
+      "token": "a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c30",
+      "display": ""
+    }
   }
 ]
