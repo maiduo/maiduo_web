@@ -24,6 +24,7 @@ urlpatterns = oauthost.urls.urlpatterns + patterns('',
     url(r'^message/$', message_handler),
     url(r'^message/addon/$', message_addon_handler),
     url(r'^chat/$', chat_handler),
+    url(r'^chat/(?P<chat_id>[^/]+)/$', chat_handler),
     url(r'^chats/$', chats_handler),
     url(r'^activity/$', activity_handler),
 )

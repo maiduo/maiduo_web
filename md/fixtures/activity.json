@@ -1,7 +1,7 @@
 [
   {
     "pk": 1, 
-    "model": "md.activity", 
+    "model": "md.Activity", 
     "fields": {
       "ip": "127.0.0.1", 
       "create_at": "2013-05-04T15:08:45.493Z", 
@@ -23,6 +23,27 @@
       "message_type": "T",
       "body": "First message.",
       "addons": 0
+    }
+  },
+  {
+    "pk": 1,
+    "model": "md.Chat",
+    "fields": {
+      "ip": "127.0.0.1", 
+      "activity": 1,
+      "create_at": "2013-05-04T15:08:45.493Z", 
+      "user": 1,
+      "text": "hello"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "md.ActivityInvite",
+    "fields": {
+      "activity": 1,
+      "username": "13000000001",
+      "avaiable": true,
+      "create_at": "2013-05-04T15:08:45.493Z"
     }
   }
 ]

@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from pdb import Pdb, set_trace as bp
 from ios_notifications.models import Device
-from models import Message, Activity, Chat
+from models import Message, Activity, ActivityInvite, Chat
 import handlers
 import os
 import utils
@@ -40,7 +40,30 @@ class OAuthTestCase(TestCase):
         self.access_token = json['access_token']
         self.refresh_token = json['refresh_token']
 
-class ActivityTest(TestCase):
+class ActivityManagerTest(TestCase):
+    fixtures = ['users', 'activity.json',]
+
+    def test_create_with_invitations(self):
+        owner = User.objects.get(pk=1)
+        activity = Activity.objects.create_with_invitations(
+            ['13000000000', 'test',], subject='Activity subject', owner=owner,\
+            ip='127.0.0.1')
+
+        user1 = activity.user.get(username="test")
+        self.assertNotEquals(None, user1)
+        self.assertEquals("13000000000", activity.invitations[0].username)
+
+    def test_i_am_coming(self):
+        user = User.objects.create_user(username="13000000001",\
+                                        password="111111")
+        Activity.objects.i_am_coming(user)
+        invitations = ActivityInvite.objects.filter(username=user.username)
+        self.assertNotEquals(0, Activity.objects.filter(user=user).count())
+        self.assertNotEquals(0, invitations.count())
+        for invitation in invitations:
+            self.assertEquals(False, invitation.avaiable)
+
+class ActivityModelTest(TestCase):
     fixtures = ['users', 'activity.json', 'ios_notifications.json']
 
     def test_devices(self):
@@ -62,7 +85,8 @@ class ActivityHandlerTest(OAuthTestCase):
         activity_subject_name = "The second activity."
         request_data = {
             "subject": activity_subject_name,
-            "access_token": self.access_token
+            "access_token": self.access_token,
+            "invitations": "13000000001,",
         }
         rsp = self.client.post('/api/activity/', request_data)
         self.assertEquals(200, rsp.status_code)
@@ -71,20 +95,26 @@ class ActivityHandlerTest(OAuthTestCase):
         self.assertEquals(activity_subject_name, activity.subject)
 
 class UserHandlerTest(TestCase):
+
+    fixtures = ['users', 'activity.json']
     
     def setUp(self):
         self.client = Client()
 
     def test_create_user(self):
         user_data = {\
-            "username": "13000000000",
+            "username": "13000000001",
             "password": "13000000000"
         }
         rsp = self.client.post('/api/user/', user_data)
         self.assertEquals(200, rsp.status_code)
 
-        user = User.objects.get(username="13000000000")
+        user = User.objects.get(username="13000000001")
         self.assertNotEquals(None, user)
+
+        activity = Activity.objects.get(pk=1)
+        joined = activity.user.get(pk=user.id)
+        self.assertNotEquals([], joined)
 
 class MessageHandlerTest(OAuthTestCase):
     fixtures = ['users', 'oauthost.json', 'activity.json', \
@@ -213,8 +243,13 @@ class AuthenticationHandlerTest(TestCase):
                                         service__name="dev").count()
         self.assertEquals(0, devices)
 
-class ChatTest(TestCase):
-    fixtures = ['users', 'activity.json', 'ios_notifications.json']
+class ChatHandlerTest(OAuthTestCase):
+
+    def test_read(self):
+        rsp = self.client.get(
+                "/api/chat/1/?access_token=%s" % self.access_token)
+        print rsp.content
+        self.assertEquals(200, rsp.status_code)
 
     def test_send_message(self):
         ios_notifications_models = handlers.push_models
@@ -233,7 +268,7 @@ class ChatTest(TestCase):
 
         original_send_notification = handlers.send_notification
         handlers.send_notification = mock_and_assert_send_notification
-        hd.create(request)
+        rsp = hd.create(request)
         handlers.send_notification = original_send_notification
 
         chat = Chat.objects.get(text="First chat message.")

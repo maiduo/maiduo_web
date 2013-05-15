@@ -11,7 +11,29 @@ MESSAGE_TYPE_CHOICES = (\
     ("I", "Image", )
 )
 
-# class ActivityManager(models.Manager):
+class ActivityManager(models.Manager):
+
+    def create_with_invitations(self, invitations, *args, **kwargs):
+        activity = self.create(*args, **kwargs)
+
+        add_list = User.objects.filter(username__in=invitations)
+        add_hash = dict([(i.username, i.username) for i in add_list])
+        add_set  = set(add_hash.values())
+        invitations = set(invitations) - add_set
+
+        for user in add_list:
+            activity.user.add(user)
+
+        ActivityInvite.objects.create_with_invitations(activity, invitations)
+
+        return activity
+
+    def i_am_coming(self, user):
+        invitations = ActivityInvite.objects.filter(username=user.username)
+        for invitation in invitations:
+            invitation.activity.user.add(user)
+
+        invitations.update(avaiable=False)
 
 
 class Activity(models.Model):
@@ -22,9 +44,14 @@ class Activity(models.Model):
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now_add=True, auto_now=True)
 
+    objects = ActivityManager()
+
     class Meta:
         ordering = ['-create_at']
 
+    def save(self, *args, **kwargs):
+        super(Activity, self).save(*args, **kwargs)
+        
 
     def devices(self, service, exclude = None):
         apns = APNService.objects.get(name=service)
@@ -41,8 +68,29 @@ class Activity(models.Model):
         return [user.ios_devices.filter(service=apns)[0]\
                 for user in user_query_set]
 
+    @property
+    def invitations(self):
+        return ActivityInvite.objects.filter(activity=self)
+
     def __unicode__(self):
         return self.subject
+
+class ActivityInviteManager(models.Manager):
+    def create_with_invitations(self, activity, invitations):
+        invitation_objects = []
+        for invitation in invitations:
+            invitation_objects.append(\
+                self.create(activity=activity, username=invitation))
+
+        return  invitation_objects
+
+class ActivityInvite(models.Model):
+    activity = models.ForeignKey(Activity)
+    username = models.CharField(max_length=255)
+    avaiable = models.BooleanField(default=True)
+    create_at = models.DateTimeField(auto_now_add=True)
+
+    objects = ActivityInviteManager() 
 
 class Message(models.Model):
     user = models.ForeignKey(User)

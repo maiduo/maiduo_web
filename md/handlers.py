@@ -149,7 +149,15 @@ def send_notification_with_tokens(tokens, service, notification):
 class ChatHandler(BaseHandler):
     model = Chat
     allowed_method = ('GET', 'POST',)
-    exclude = ('id', 'ip', 'create_at', 'update_at',)
+    fields = ("id", ("user", ("id", "first_name",)), "text",\
+              ("activity", ("id",)), "create_at" )
+    exclude = ('ip',)
+
+    def read(self, request, chat_id):
+        try:
+            return Chat.objects.get(pk=chat_id)
+        except Chat.DoesNotExist:
+            return rc.NOT_FOUND
 
     def create(self, request):
         activity_id = request.POST.get("activity_id", 0)
@@ -179,8 +187,8 @@ class ChatHandler(BaseHandler):
             'chat_id': chat.id
         }
         send_notification(activity.devices(service, exclude=[request.user]), \
-                          "dev", notification)
-        return rc.CREATED
+                          service, notification)
+        return chat
 
 class ChatsHandler(BaseHandler):
     model = Chat
@@ -241,13 +249,17 @@ class ActivityHandler(BaseHandler):
 
     def create(self, request):
         subject = request.POST.get("subject", "")
+        invitations = request.POST.get("invitations", "").split(",")
         ip_address = utils.get_client_ip(request)
         kw_activity = {
             "subject": subject,
             "owner": request.user,
             "ip": ip_address
         }
-        activity = Activity.objects.create(**kw_activity)
+        activity = Activity\
+                    .objects\
+                    .create_with_invitations\
+                        (invitations, **kw_activity)
         activity.user.add(request.user)
         return activity
 
@@ -263,6 +275,7 @@ class UserHandler(BaseHandler):
         try:
             user = User.objects.create_user(username=username,\
                                             password=password)
+            Activity.objects.i_am_coming(user)
         except IntegrityError:
             bad = rc.BAD_REQUEST
             bad.write("User has exists.")
