@@ -65,8 +65,13 @@ class Activity(models.Model):
         user_query_set = exclude and self.user.exclude(\
                                         id__in=[user.id for user in exclude])\
                                  or self.user.all()
-        return [user.ios_devices.filter(service=apns)[0]\
-                for user in user_query_set]
+
+        _devices = []
+        for user in user_query_set]
+            user_devices = user.ios_devices.filter(service=apns)
+            if 0 < len(user_devices):
+                _devices.append(user_devices[0])
+        return _devices
 
     @property
     def invitations(self):
