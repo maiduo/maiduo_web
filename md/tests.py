@@ -251,6 +251,7 @@ class ChatHandlerTest(OAuthTestCase):
         print rsp.content
         self.assertEquals(200, rsp.status_code)
 
+    """
     def test_send_message_in_stub(self):
         chat_post = {\
             "access_token": self.access_token,
@@ -260,6 +261,7 @@ class ChatHandlerTest(OAuthTestCase):
         rsp =  self.client.post("/api/chat/", chat_post)
         print rsp.content
         self.assertEquals(200, rsp.status_code)
+    """
 
     def test_send_message(self):
         ios_notifications_models = handlers.push_models

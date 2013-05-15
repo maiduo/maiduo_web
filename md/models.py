@@ -67,7 +67,7 @@ class Activity(models.Model):
                                  or self.user.all()
 
         _devices = []
-        for user in user_query_set]
+        for user in user_query_set:
             user_devices = user.ios_devices.filter(service=apns)
             if 0 < len(user_devices):
                 _devices.append(user_devices[0])
