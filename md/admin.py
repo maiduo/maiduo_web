@@ -4,7 +4,7 @@ from models import Activity, Chat
 class ActivityAdmin(admin.ModelAdmin):
     pass
 
-class ChatAdmin(admin.ModelAmin):
+class ChatAdmin(admin.ModelAdmin):
     pass
 
 admin.site.register(Activity, ActivityAdmin)
