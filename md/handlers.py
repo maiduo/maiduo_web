@@ -249,7 +249,7 @@ class ActivityHandler(BaseHandler):
 
     def create(self, request):
         subject = request.POST.get("subject", "")
-        invitations = request.POST.get("invitations", "").split(",")
+        invitations = request.POST.get("invitation", "").split(",")
         ip_address = utils.get_client_ip(request)
         kw_activity = {
             "subject": subject,
