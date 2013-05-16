@@ -166,7 +166,7 @@ class ChatHandler(BaseHandler):
         try:
             #TODO 检查用户是否有权限发布消息
             activity = Activity.objects.get(pk=activity_id)
-        except Acitivity.DoesNotExist:
+        except Activity.DoesNotExist:
             activity = None
         if not activity:
             not_found = rc.NOT_FOUND
