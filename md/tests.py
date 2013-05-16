@@ -150,6 +150,7 @@ class MessagesHandlerTest(OAuthTestCase):
     def test_read(self):
         rsp = self.client.get("/api/messages/1/?access_token=%s"\
                               % self.access_token)
+        print rsp.content
         self.assertEquals(200, rsp.status_code)
 
 class MessageAddonHandlerTest(OAuthTestCase):

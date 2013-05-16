@@ -45,7 +45,7 @@ class MessagesHandler(BaseHandler):
 class MessageHandler(BaseHandler):
     model = Message
     allowed_method = ('GET', 'POST',)
-    exclude = ('id', 'ip', 'create_at',)
+    exclude = ('ip',)
 
     def read(request):
         pass
