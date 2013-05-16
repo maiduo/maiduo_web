@@ -171,7 +171,7 @@ class ChatHandler(BaseHandler):
         if not activity:
             not_found = rc.NOT_FOUND
             not_found.write("Activity id not found.")
-            return not_foud
+            return not_found
         
         if "" == text:
             empty = rc.BAD_REQUEST
