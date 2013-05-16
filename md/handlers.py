@@ -216,8 +216,17 @@ class ChatsHandler(BaseHandler):
     allowed_method = ('GET',)
     exclude = ('ip')
 
-    def read(request):
-        pass
+    def read(self, request, activity_id):
+        page = request.GET.get("page", 1)
+        kw_query = {\
+            "activity_id": activity_id,
+            "user_id": request.user.id
+        }
+        query_set = Chat.objects.filter(**kw_query)
+        paginator = Paginator(query_set, settings.PER_PAGE_SIZE)
+
+        return paginator.page(page).object_list
+
 
 class AuthenticationHandler(BaseHandler):
     allowed_method =('POST',)

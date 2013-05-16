@@ -250,12 +250,18 @@ class AuthenticationHandlerTest(TestCase):
                                         service__name="dev").count()
         self.assertEquals(0, devices)
 
+class ChatsHandlerTest(OAuthTestCase):
+    def test_read(self):
+        rsp = self.client.get("/api/chats/1/?access_token=%s" \
+                              % self.access_token)
+        print rsp.content
+        self.assertEquals(200, rsp.status_code)
+
 class ChatHandlerTest(OAuthTestCase):
 
     def test_read(self):
         rsp = self.client.get(
                 "/api/chat/1/?access_token=%s" % self.access_token)
-        print rsp.content
         self.assertEquals(200, rsp.status_code)
 
     """
