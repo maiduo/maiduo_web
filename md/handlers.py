@@ -184,13 +184,14 @@ class ChatHandler(BaseHandler):
         text = request.POST.get("text", "")
         service = request.POST.get("service", "dev")
         try:
+            #TODO 检查用户是否有权限发布消息
             activity = Activity.objects.get(pk=activity_id)
-        except Acitivity.DoesNotExists:
+        except Activity.DoesNotExist:
             activity = None
         if not activity:
             not_found = rc.NOT_FOUND
             not_found.write("Activity id not found.")
-            return not_foud
+            return not_found
         
         if "" == text:
             empty = rc.BAD_REQUEST
