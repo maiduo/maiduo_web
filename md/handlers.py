@@ -26,7 +26,7 @@ from pdb import set_trace as bp
 class MessagesHandler(BaseHandler):
     model = Message
     allowed_method = ('GET',)
-    exclude = ('id', 'ip', 'create_at',)
+    exclude = ('ip',)
 
     def read(self, request, activity_id):
         page = request.GET.get("page", 1)
