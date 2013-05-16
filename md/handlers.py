@@ -9,6 +9,7 @@ from models import Message, MessageAddon, Activity, Chat
 from forms import MessageForm
 from django.db import IntegrityError
 from django.conf import settings
+from django.core.paginator import Paginator
 from django.utils import simplejson
 from django.contrib.auth.models import User
 from os.path import basename, dirname, join
@@ -22,10 +23,29 @@ from pdb import set_trace as bp
 # 推送出去，所以没有直接引入APNService等对象，而是引入模块，以方便在测试用例中替
 # 换
 
+class MessagesHandler(BaseHandler):
+    model = Message
+    allowed_method = ('GET',)
+    exclude = ('id', 'ip', 'create_at',)
+
+    def read(self, request, activity_id):
+        page = request.GET.get("page", 1)
+        
+        kwquery = {\
+            "activity_id": activity_id,
+            "user_id": request.user.id
+        }
+        try:
+            query_set = Message.objects.filter(**kwquery)
+            paginator = Paginator(query_set, settings.PER_PAGE_SIZE)
+            return paginator.page(page).object_list
+        except Message.DoesNotExist:
+            return rc.NOT_FOUND
+
 class MessageHandler(BaseHandler):
     model = Message
     allowed_method = ('GET', 'POST',)
-    exclude = ('id', 'ip', 'create_at', 'update_at',)
+    exclude = ('id', 'ip', 'create_at',)
 
     def read(request):
         pass
@@ -184,6 +204,7 @@ class ChatHandler(BaseHandler):
         notification = push_models.Notification(message=text)
         notification.extra = {\
             'activity_id': activity_id,
+            'user_id': request.user.id,
             'chat_id': chat.id
         }
         send_notification(activity.devices(service, exclude=[request.user]), \

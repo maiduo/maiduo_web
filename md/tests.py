@@ -146,6 +146,14 @@ class MessageHandlerTest(OAuthTestCase):
         handlers.push_models = ios_notifications_models
         handlers.utils = utils_module
 
+class MessagesHandlerTest(OAuthTestCase):
+    def test_read(self):
+        rsp = self.client.get("/api/messages/1/?access_token=%s"\
+                              % self.access_token)
+        print rsp.content
+        self.assertEquals(200, rsp.status_code)
+        bp()
+
 class MessageAddonHandlerTest(OAuthTestCase):
     fixtures = ['users', 'oauthost.json', 'activity.json', \
                 'ios_notifications.json']
@@ -159,7 +167,6 @@ class MessageAddonHandlerTest(OAuthTestCase):
         }
         rsp = self.client.post("/api/message/addon/", addons_data)
         self.assertEquals(200, rsp.status_code)
-        attachment.close()
 
 
 class HandlerTest(TestCase):
