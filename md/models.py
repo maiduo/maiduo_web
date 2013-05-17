@@ -108,6 +108,9 @@ class Message(models.Model):
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now_add=True, auto_now=True)
 
+    class Meta:
+        ordering = ['-create_at']
+
 class MessageAddon(models.Model):
     message = models.ForeignKey(Message)
     extra = models.CharField(max_length=255, default="", null=True, blank=True)
