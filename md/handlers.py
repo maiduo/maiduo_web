@@ -33,8 +33,6 @@ class MessageHandler(BaseHandler):
     #@oauth_required(scope_auto=True)
     #@validate(MessageForm)
 
-        
-
     def create(self, request):
         attrs = self.flatten_dict(request.POST)
         ip_address = utils.get_client_ip(request)
@@ -54,7 +52,9 @@ class MessageHandler(BaseHandler):
         notification = push_models.Notification(message=push_text)
         notification.extra = {\
             "activity_id": activity_id,
-            "message_id": msg.id
+            "message_id": msg.id,
+            "user": request.user.id,
+            "type": "message",
         }
         devices = activity.devices(service, exclude=[request.user])
         send_notification(devices, service, notification)
@@ -169,9 +169,7 @@ class ChatHandler(BaseHandler):
         except Activity.DoesNotExist:
             activity = None
         if not activity:
-            not_found = rc.NOT_FOUND
-            not_found.write("Activity id not found.")
-            return not_found
+            return rc.NOT_FOUND
         
         if "" == text:
             empty = rc.BAD_REQUEST
@@ -185,7 +183,9 @@ class ChatHandler(BaseHandler):
         notification = push_models.Notification(message=text)
         notification.extra = {\
             'activity_id': activity_id,
-            'chat_id': chat.id
+            'chat_id': chat.id,
+            'user_id': request.id,
+            'type': 'chat',
         }
         send_notification(activity.devices(service, exclude=[request.user]), \
                           service, notification)
