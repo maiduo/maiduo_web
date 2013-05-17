@@ -74,6 +74,7 @@ class MessageHandler(BaseHandler):
             "activity_id": activity_id,
             "message_id": msg.id,
             "user": request.user.id,
+            "message_body": message_body,
             "type": "message",
         }
         devices = activity.devices(service, exclude=[request.user])
@@ -205,6 +206,7 @@ class ChatHandler(BaseHandler):
             'activity_id': activity_id,
             'chat_id': chat.id,
             'user_id': request.id,
+            'chat_text': text,
             'type': 'chat',
         }
         send_notification(activity.devices(service, exclude=[request.user]), \
