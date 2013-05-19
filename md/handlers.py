@@ -73,7 +73,7 @@ class MessageHandler(BaseHandler):
         notification.extra = {\
             "activity_id": activity_id,
             "message_id": msg.id,
-            "user": request.user.id,
+            "user_id": request.user.id,
             "message_body": message_body,
             "type": "message",
         }
