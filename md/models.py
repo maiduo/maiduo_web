@@ -129,5 +129,5 @@ class Chat(models.Model):
     create_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-create_at']
+        ordering = ['+create_at']
 
