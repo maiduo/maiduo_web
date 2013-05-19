@@ -220,11 +220,12 @@ class ChatsHandler(BaseHandler):
 
     def read(self, request, activity_id):
         page = request.GET.get("page", 1)
+        page_size = request.GET.get("page_size", settings.PER_PAGE_SIZE);
         kw_query = {\
             "activity_id": activity_id,
         }
         query_set = Chat.objects.filter(**kw_query)
-        paginator = Paginator(query_set, settings.PER_PAGE_SIZE)
+        paginator = Paginator(query_set, page_size)
 
         return paginator.page(page).object_list
 

@@ -75,7 +75,6 @@ class ActivityHandlerTest(OAuthTestCase):
     def test_read(self):
         activity_url = '/api/activity/?access_token=%s' % self.access_token
         rsp = self.client.get(activity_url)
-        print rsp.content
         activities = simplejson.loads(rsp.content)
         self.assertEquals(200, rsp.status_code)
         self.assertEquals(1, len(activities))
@@ -255,7 +254,6 @@ class ChatsHandlerTest(OAuthTestCase):
     def test_read(self):
         rsp = self.client.get("/api/chats/1/?access_token=%s" \
                               % self.access_token)
-        print rsp.content
         self.assertEquals(200, rsp.status_code)
 
 class ChatHandlerTest(OAuthTestCase):
