@@ -221,6 +221,14 @@ class ChatsHandler(BaseHandler):
     def read(self, request, activity_id):
         page = request.GET.get("page", 1)
         page_size = request.GET.get("page_size", settings.PER_PAGE_SIZE);
+        try:
+            page_size = int(page_size)
+        except ValueError:
+            page_size = settings.PER_PAGE_SIZE
+
+        if page_size < 1 or page_size > 100:
+            page_size = settings.PER_PAGE_SIZE
+
         kw_query = {\
             "activity_id": activity_id,
         }
