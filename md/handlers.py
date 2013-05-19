@@ -205,7 +205,7 @@ class ChatHandler(BaseHandler):
         notification.extra = {\
             'activity_id': activity_id,
             'chat_id': chat.id,
-            'user_id': request.id,
+            'user_id': request.user.id,
             'chat_text': text,
             'type': 'chat',
         }
