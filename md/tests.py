@@ -250,8 +250,9 @@ class AuthenticationHandlerTest(TestCase):
 
 class ChatsHandlerTest(OAuthTestCase):
     def test_read(self):
-        rsp = self.client.get("/api/chats/1/?access_token=%s" \
+        rsp = self.client.get("/api/chats/1/?access_token=%s&page_size=1&page=1"\
                               % self.access_token)
+        chats = simplejson.loads(rsp.content)
         self.assertEquals(200, rsp.status_code)
 
     def test_read_page_size_equal_zero(self):

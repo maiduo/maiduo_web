@@ -219,7 +219,10 @@ class ChatsHandler(BaseHandler):
     exclude = ('ip')
 
     def read(self, request, activity_id):
-        page = request.GET.get("page", 1)
+        try:
+            page = int(request.GET.get("page", 1))
+        except ValueError:
+            page = 1
         page_size = request.GET.get("page_size", settings.PER_PAGE_SIZE);
         try:
             page_size = int(page_size)
