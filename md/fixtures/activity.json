@@ -60,6 +60,28 @@
     }
   },
   {
+    "pk": 3,
+    "model": "md.Chat",
+    "fields": {
+      "ip": "127.0.0.1", 
+      "activity": 1,
+      "create_at": "2013-05-04T15:08:45.493Z", 
+      "user": 1,
+      "text": "hello"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "md.Chat",
+    "fields": {
+      "ip": "127.0.0.1", 
+      "activity": 1,
+      "create_at": "2013-05-04T15:08:45.493Z", 
+      "user": 1,
+      "text": "hello"
+    }
+  },
+  {
     "pk": 1,
     "model": "md.ActivityInvite",
     "fields": {

@@ -240,8 +240,11 @@ class ChatsHandler(BaseHandler):
 
         if page > paginator.num_pages:
             return []
+        chats = paginator.page(page).object_list
+        chats = [i for i in chats]
+        chats.reverse()
 
-        return paginator.page(page).object_list
+        return chats
 
 
 class AuthenticationHandler(BaseHandler):
