@@ -77,7 +77,7 @@ class ActivityHandlerTest(OAuthTestCase):
         rsp = self.client.get(activity_url)
         activities = simplejson.loads(rsp.content)
         self.assertEquals(200, rsp.status_code)
-        self.assertEquals(1, len(activities))
+        self.assertEquals(2, len(activities))
         self.assertEquals(1, activities[0]['owner']['id'])
 
 
@@ -150,7 +150,6 @@ class MessagesHandlerTest(OAuthTestCase):
     def test_read(self):
         rsp = self.client.get("/api/messages/1/?access_token=%s"\
                               % self.access_token)
-        print rsp.content
         self.assertEquals(200, rsp.status_code)
 
 class MessageAddonHandlerTest(OAuthTestCase):
@@ -165,7 +164,6 @@ class MessageAddonHandlerTest(OAuthTestCase):
             "attachment": attachment
         }
         rsp = self.client.post("/api/message/addon/", addons_data)
-        print rsp.content
         self.assertEquals(200, rsp.status_code)
 
 
@@ -255,6 +253,18 @@ class ChatsHandlerTest(OAuthTestCase):
         rsp = self.client.get("/api/chats/1/?access_token=%s" \
                               % self.access_token)
         self.assertEquals(200, rsp.status_code)
+
+    def test_read_page_size_equal_zero(self):
+        rsp = self.client.get("/api/chats/1/?access_token=%s&page_size=0" \
+                              % self.access_token)
+        self.assertEquals(200, rsp.status_code)
+
+    def test_read_page_great_max_page(self):
+        rsp = self.client.get("/api/chats/1/?access_token=%s&page=100" \
+                              % self.access_token)
+        self.assertEquals('[]', rsp.content)
+        self.assertEquals(200, rsp.status_code)
+
 
 class ChatHandlerTest(OAuthTestCase):
 

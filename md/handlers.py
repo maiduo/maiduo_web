@@ -235,6 +235,9 @@ class ChatsHandler(BaseHandler):
         query_set = Chat.objects.filter(**kw_query)
         paginator = Paginator(query_set, page_size)
 
+        if page > paginator.num_pages:
+            return []
+
         return paginator.page(page).object_list
 
 
