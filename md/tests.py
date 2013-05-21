@@ -93,6 +93,28 @@ class ActivityHandlerTest(OAuthTestCase):
         activity = Activity.objects.get(subject=activity_subject_name)
         self.assertEquals(activity_subject_name, activity.subject)
 
+class ActivityInviteHandlerTest(OAuthTestCase):
+    def test_create_has_user(self):
+        request_data = {
+            "activity_id": 1,
+            "username": "13000000001",
+            "name": "13000000001",
+            "access_token": self.access_token
+        }
+
+        rsp = self.client.post('/api/activity/invite/', request_data)
+        self.assertEquals(200, rsp.status_code)
+
+        rsp = self.client.post('/api/activity/invite/', request_data)
+        self.assertEquals(200, rsp.status_code)
+
+        user = User.objects.get(username="13000000001")
+        user_test = User.objects.get(username="test")
+        activity = Activity.objects.get(pk=1)
+
+        self.assertEquals(1, activity.user.filter(id=user.id).count())
+
+
 class UserHandlerTest(TestCase):
 
     fixtures = ['users', 'activity.json']

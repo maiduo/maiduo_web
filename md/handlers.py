@@ -5,7 +5,7 @@ from oauthost.decorators import oauth_required
 from oauthost import auth_views
 from piston.handler import BaseHandler
 from piston.utils import rc, validate
-from models import Message, MessageAddon, Activity, Chat
+from models import Message, MessageAddon, Activity, Chat, ActivityInvite
 from forms import MessageForm
 from django.db import IntegrityError
 from django.conf import settings
@@ -316,7 +316,7 @@ class ActivityHandler(BaseHandler):
         return activity
 
 class ActivityInviteHandler(BaseHandler):
-    model = Activity
+    model = ActivityInvite
     allowed_method = ('POST',)
 
     def create(self, request):
@@ -328,18 +328,29 @@ class ActivityInviteHandler(BaseHandler):
             return rc.NOT_FOUND
         
         now = timezone.now()
-        invitation_user = User(username=username,first_name=name,
-                               is_active=False, is_staff=False, 
-                               is_superuser=False,last_login=now, 
-                               date_joined=now)
+        try:
+            invitation_user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            invitation_user = User(username=username,first_name=name,
+                                   is_active=False, is_staff=False, 
+                                   is_superuser=False,last_login=now, 
+                                   date_joined=now)
 
-        invitation_user.set_password("%f" % random.random())
-        invitation_user.save()
+            invitation_user.set_password("%f" % random.random())
+            # invitation_user.save()
 
-        invitation = ActivityInvite(referer=request.user, user=invitation, 
-                       activity_id=activity_id)
-
-        return invitation
+        """invitation_user = ActivityInvite(refer=request.user,\
+                                         user=invitation_user, 
+                                         activity_id=activity_id)
+        """
+        try:
+            activity = Activity.objects.get(id=activity_id)
+        except Activity.DoesNotExist:
+            return rc.NOT_FOUND
+        has_joined = activity.user.filter(id=invitation_user.id).count() > 0
+        if not has_joined:
+            activity.user.add(invitation_user)
+        return invitation_user
 
 class UserHandler(BaseHandler):
     model = User
@@ -351,6 +362,7 @@ class UserHandler(BaseHandler):
         username = request.POST.get("username", None)
         password = request.POST.get("password", None)
         name = request.POST.get("name", None)
+
         try:
             user = User.objects.create_user(username=username,\
                                             password=password)
@@ -359,7 +371,7 @@ class UserHandler(BaseHandler):
             if user.is_active:
                 return rc.BAD_REQUEST
 
-            Activity.objects.i_am_coming(user)
+            # Activity.objects.i_am_coming(user)
         user.first_name = name
         user.set_password(password)
 

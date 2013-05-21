@@ -2,7 +2,8 @@ from django.conf.urls import patterns, url
 from piston.resource import Resource
 from handlers import MessageHandler, ChatHandler, ChatsHandler, UserHandler,\
                      AuthenticationHandler, ActivityHandler,\
-                     MessageAddonHandler, MessagesHandler
+                     MessageAddonHandler, MessagesHandler,\
+                     ActivityInviteHandler
 from oauthost.utils import PistonAuthHelper
 import oauthost.urls
 
@@ -13,6 +14,7 @@ message_addon_handler = Resource(MessageAddonHandler, authentication=auth)
 chat_handler = Resource(ChatHandler, authentication=auth)
 chats_handler = Resource(ChatsHandler, authentication=auth)
 user_handler = Resource(UserHandler)
+invite_handler = Resource(ActivityInviteHandler, authentication=auth)
 authentication_handler = Resource(AuthenticationHandler)
 activity_handler = Resource(ActivityHandler, authentication=auth)
 
@@ -29,4 +31,5 @@ urlpatterns = oauthost.urls.urlpatterns + patterns('',
     url(r'^chat/(?P<chat_id>[^/]+)/$', chat_handler),
     url(r'^chats/(?P<activity_id>[^/]+)/$', chats_handler),
     url(r'^activity/$', activity_handler),
+    url(r'^activity/invite/$', invite_handler),
 )
