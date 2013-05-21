@@ -28,8 +28,9 @@ class ActivityManager(models.Manager):
 
         return activity
 
+
     def i_am_coming(self, user):
-        invitations = ActivityInvite.objects.filter(username=user.username)
+        invitations = ActivityInvite.objects.filter(user=user, avaiable=True)
         for invitation in invitations:
             invitation.activity.user.add(user)
 
@@ -91,7 +92,8 @@ class ActivityInviteManager(models.Manager):
 
 class ActivityInvite(models.Model):
     activity = models.ForeignKey(Activity)
-    username = models.CharField(max_length=255)
+    user = models.ForeignKey(User, related_name="users", default=0)
+    refer = models.ForeignKey(User, related_name="refers", default=0)
     avaiable = models.BooleanField(default=True)
     create_at = models.DateTimeField(auto_now_add=True)
 

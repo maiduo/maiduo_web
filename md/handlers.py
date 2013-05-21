@@ -11,12 +11,14 @@ from django.db import IntegrityError
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.utils import simplejson
+from django.utils import timezone
 from django.contrib.auth.models import User
 from os.path import basename, dirname, join
 from ios_notifications import models as push_models
 import os
 import utils
 import PIL.Image
+import random
 from pdb import set_trace as bp
 
 # 构建消息发送功能时，必须使用Mock的Notification相关对象，也就是说不能真的把消息
@@ -75,6 +77,7 @@ class MessageHandler(BaseHandler):
             "message_id": msg.id,
             "user_id": request.user.id,
             "message_body": message_body,
+            "message_type": msg.message_type,
             "type": "message",
         }
         devices = activity.devices(service, exclude=[request.user])
@@ -307,10 +310,36 @@ class ActivityHandler(BaseHandler):
         }
         activity = Activity\
                     .objects\
-                    .create_with_invitations\
-                        (invitations, **kw_activity)
+                    .create(**kw_activity)
+
         activity.user.add(request.user)
         return activity
+
+class ActivityInviteHandler(BaseHandler):
+    model = Activity
+    allowed_method = ('POST',)
+
+    def create(self, request):
+        username = request.POST.get('username', None)
+        name = request.POST.get('name', None)
+        activity_id = request.POST.get('activity_id', 0)
+        
+        if activity_id < 1:
+            return rc.NOT_FOUND
+        
+        now = timezone.now()
+        invitation_user = User(username=username,first_name=name,
+                               is_active=False, is_staff=False, 
+                               is_superuser=False,last_login=now, 
+                               date_joined=now)
+
+        invitation_user.set_password("%f" % random.random())
+        invitation_user.save()
+
+        invitation = ActivityInvite(referer=request.user, user=invitation, 
+                       activity_id=activity_id)
+
+        return invitation
 
 class UserHandler(BaseHandler):
     model = User
@@ -321,14 +350,19 @@ class UserHandler(BaseHandler):
     def create(self, request):
         username = request.POST.get("username", None)
         password = request.POST.get("password", None)
+        name = request.POST.get("name", None)
         try:
             user = User.objects.create_user(username=username,\
                                             password=password)
-            Activity.objects.i_am_coming(user)
         except IntegrityError:
-            bad = rc.BAD_REQUEST
-            bad.write("User has exists.")
-            return bad
+            user = User.objects.get(username=username)
+            if user.is_active:
+                return rc.BAD_REQUEST
+
+            Activity.objects.i_am_coming(user)
+        user.first_name = name
+        user.set_password(password)
+
         return user
 
     def read(self, request, username):
