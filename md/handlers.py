@@ -348,6 +348,8 @@ class ActivityInviteHandler(BaseHandler):
         except Activity.DoesNotExist:
             return rc.NOT_FOUND
         has_joined = activity.user.filter(id=invitation_user.id).count() > 0
+        activity.user.save()
+        activity.save()
         if not has_joined:
             activity.user.add(invitation_user)
         return invitation_user
@@ -362,7 +364,6 @@ class UserHandler(BaseHandler):
         username = request.POST.get("username", None)
         password = request.POST.get("password", None)
         name = request.POST.get("name", None)
-
         try:
             user = User.objects.create_user(username=username,\
                                             password=password)
@@ -372,8 +373,10 @@ class UserHandler(BaseHandler):
                 return rc.BAD_REQUEST
 
             # Activity.objects.i_am_coming(user)
+        user.is_active = True
         user.first_name = name
         user.set_password(password)
+        user.save()
 
         return user
 

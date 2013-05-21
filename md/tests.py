@@ -1,3 +1,5 @@
+#! -*- encoding:utf-8 -*-
+
 """
 This file demonstrates writing tests using the unittest module. These will pass
 when you run "manage.py test".
@@ -125,7 +127,8 @@ class UserHandlerTest(TestCase):
     def test_create_user(self):
         user_data = {\
             "username": "13000000001",
-            "password": "13000000000"
+            "password": "13000000000",
+            "name": u"袁德俊",
         }
         rsp = self.client.post('/api/user/', user_data)
         self.assertEquals(200, rsp.status_code)
@@ -136,6 +139,7 @@ class UserHandlerTest(TestCase):
         activity = Activity.objects.get(pk=1)
         joined = activity.user.get(pk=user.id)
         self.assertNotEquals([], joined)
+        self.assertEquals(True, user.is_active)
 
 class MessageHandlerTest(OAuthTestCase):
     fixtures = ['users', 'oauthost.json', 'activity.json', \
