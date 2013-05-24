@@ -133,3 +133,14 @@ class Chat(models.Model):
     class Meta:
         ordering = ['-id']
 
+class UserToken(models.Model):
+    user = models.ForeignKey(User)
+    token = models.CharField(max_length=6)
+    ip = models.GenericIPAddressField('IPv4')
+    create_at = models.DateTimeField(auto_now_add=True)
+
+class SMSLog(models.Model):
+    content = models.CharField(max_length=255)
+    mobile = models.TextField()
+    ip = models.GenericIPAddressField('IPv4')
+    create_at = models.DateTimeField(auto_now_add=True)

@@ -124,6 +124,16 @@ class UserHandlerTest(TestCase):
     def setUp(self):
         self.client = Client()
 
+    def test_upload_avatar(self):
+        user_data = {\
+            "access_token": self.access_token,
+            "avatar": open("resources/avatar.png"),
+        }
+
+        rsp = self.client.put("/api/user/", user_data)
+        print rsp.content
+
+
     def test_create_user(self):
         user_data = {\
             "username": "13000000001",

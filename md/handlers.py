@@ -15,6 +15,8 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from os.path import basename, dirname, join
 from ios_notifications import models as push_models
+from urllib import urlopen
+from os.path import join
 import os
 import utils
 import PIL.Image
@@ -24,6 +26,73 @@ from pdb import set_trace as bp
 # 构建消息发送功能时，必须使用Mock的Notification相关对象，也就是说不能真的把消息
 # 推送出去，所以没有直接引入APNService等对象，而是引入模块，以方便在测试用例中替
 # 换
+
+class SMS(object):
+    def send(mobile, content):
+        sms_url = "http://www.smsbao.com/sms?u=himaiduo&p=&m=%s&c=%s"
+        fd = urlopen(sms_url % (mobile, content))
+        responseText = fd.read(10)
+        fd.close()
+
+class SMSFactory(object):
+    def create(self):
+        return SMS()
+
+class MDHandler(BaseHandler):
+    def __init__(self, sms_factory = SMSFactory, *args, **kwargs)
+        self.sms = sms_factory.create()
+        super(MDHandler, self).__init__(*args, **kwargs)
+
+    def _storage_image_thumbnail(self, image, id, path, width):
+        media_root = settings.MEDIA_ROOT
+        preview_path = join("user", path, "%d/%d_%d.jpg" % ids + [width]
+        preview_fd = file(os.path.join(media_root, preview_path), "w+")
+
+        if w > width:
+            preview_size = (width, h * (w / width))
+        else:
+            preview_size = (w, h)
+
+        src.seek(0)
+
+        preview_fd.seek(0)
+        preview = PIL.Image.open(image)
+        if w > width:
+            preview.thumbnail(preview_size, PIL.Image.ANTIALIAS)
+        preview.save(preview_fd.name, "JPEG")
+
+        src.seek(0)
+        preview_fd.close()
+
+    def _storage_image(self, image, id, path, width):
+        if not image:
+            return
+        ids = (id % 1000, id)
+        origin_path = join("user", path, "%d/%d.jpg" % ids)
+        media_root = settings.MEDIA_ROOT
+        try:
+            os.makedirs(dirname(join(media_root, origin_path)))
+        except OSError:
+            pass
+
+        origin_fd = file(os.path.join(media_root, origin_path), "w+")
+
+        utils.copy_file(src, origin_fd)
+        origin_fd.seek(0)
+        original = PIL.Image.open(origin_fd)
+        w, h = original.size
+        if not "JPEG" == original.format:
+            original.save(origin_fd.name, "JPEG")
+        origin_fd.close()
+
+        for i in width:
+            self._storage_image_thumbnail(image, id, path, i)
+        src.close()
+        origin_fd.close()
+
+
+    def _send_sms(self, mobile, content):
+        self.sms.send(mobile, content)
 
 class MessagesHandler(BaseHandler):
     model = Message
@@ -354,11 +423,17 @@ class ActivityInviteHandler(BaseHandler):
             activity.user.add(invitation_user)
         return invitation_user
 
-class UserHandler(BaseHandler):
+class UserHandler(MDHandler):
     model = User
-    allowed_method = ('POST',)
+    allowed_method = ('POST', 'PUT',)
     exclude = ('password', 'is_superuser', 'is_staff', 'email', 'is_active',
                'last_login', 'date_joined', 'last_name', )
+    
+    def update(self, request):
+        if request.FILES.get("avatar", None):
+            self._storage_image(request.FILES['avatar'], request.user.id,\
+                                'avatar', [100, 200, 400])
+        return rc.ALL_OK
 
     def create(self, request):
         username = request.POST.get("username", None)
