@@ -39,21 +39,23 @@ class SMSFactory(object):
         return SMS()
 
 class MDHandler(BaseHandler):
-    def __init__(self, sms_factory = SMSFactory, *args, **kwargs)
+    def __init__(self, sms_factory = SMSFactory(), *args, **kwargs):
         self.sms = sms_factory.create()
         super(MDHandler, self).__init__(*args, **kwargs)
 
-    def _storage_image_thumbnail(self, image, id, path, width):
+    def _storage_image_thumbnail(self, image, id, path, width, origin):
         media_root = settings.MEDIA_ROOT
-        preview_path = join("user", path, "%d/%d_%d.jpg" % ids + [width]
+        ids = (id % 1000, id, width)
+        preview_path = join("user", path, "%d/%d_%d.jpg" % ids)
         preview_fd = file(os.path.join(media_root, preview_path), "w+")
 
+        w, h = origin
         if w > width:
             preview_size = (width, h * (w / width))
         else:
             preview_size = (w, h)
 
-        src.seek(0)
+        image.seek(0)
 
         preview_fd.seek(0)
         preview = PIL.Image.open(image)
@@ -61,7 +63,7 @@ class MDHandler(BaseHandler):
             preview.thumbnail(preview_size, PIL.Image.ANTIALIAS)
         preview.save(preview_fd.name, "JPEG")
 
-        src.seek(0)
+        image.seek(0)
         preview_fd.close()
 
     def _storage_image(self, image, id, path, width):
@@ -77,7 +79,7 @@ class MDHandler(BaseHandler):
 
         origin_fd = file(os.path.join(media_root, origin_path), "w+")
 
-        utils.copy_file(src, origin_fd)
+        utils.copy_file(image, origin_fd)
         origin_fd.seek(0)
         original = PIL.Image.open(origin_fd)
         w, h = original.size
@@ -86,8 +88,8 @@ class MDHandler(BaseHandler):
         origin_fd.close()
 
         for i in width:
-            self._storage_image_thumbnail(image, id, path, i)
-        src.close()
+            self._storage_image_thumbnail(image, id, path, i, (w, h))
+        image.close()
         origin_fd.close()
 
 
@@ -281,8 +283,8 @@ class ChatHandler(BaseHandler):
             'chat_text': text,
             'type': 'chat',
         }
-        send_notification(activity.devices(service, exclude=[request.user]), \
-                          service, notification)
+        devices = activity.devices(service, exclude=[request.user])
+        send_notification(devices, service, notification)
         return chat
 
 class ChatsHandler(BaseHandler):
@@ -321,6 +323,8 @@ class ChatsHandler(BaseHandler):
 
 class AuthenticationHandler(BaseHandler):
     allowed_method =('POST',)
+    model = User
+    fields = ('id', 'username', 'first_name')
 
     def bind_user_and_device_token(self, user, device_token, service_name):
         query = {\
@@ -328,8 +332,16 @@ class AuthenticationHandler(BaseHandler):
             "token": device_token,
             "service__name": service_name
         }
+
+        # kick_user_with_device
+        devices = push_models.Device\
+            .objects\
+            .filter(token=device_token, service__name=service_name)\
+            .delete()
+
         not_bind = push_models.Device.objects.filter(**query).count() == 0
         empty_token = '' == device_token
+
         if not_bind and not empty_token:
             service = push_models.APNService.objects.get(name=service_name)
             kw_device = {\
@@ -341,6 +353,7 @@ class AuthenticationHandler(BaseHandler):
             except push_models.Device.DoesNotExist:
                 device = push_models.Device.objects.create(**kw_device)
             user.ios_devices.add(device)
+
 
 
     def create(self, request):
@@ -359,11 +372,29 @@ class AuthenticationHandler(BaseHandler):
         return JSON
 
 
+
+class LogoutHandler(BaseHandler):
+    allowed_method = ('POST',)
+    fields = ('id', 'username', 'first_name')
+    exclude = ('password', 'ip')
+    model = User
+
+    def create(self, request):
+        device_token = request.POST.get("device_token")
+
+        request.user.ios_devices.filter(token=device_token).delete()
+        devices = request.user.ios_devices.all()
+        return rc.DELETED
+
+
 class ActivityHandler(BaseHandler):
     model = Activity
-    allowed_method = ('POST', 'READ')
-    fields = ('id', 'subject', 'owner', 'user',)
-    exclude = ('ip', 'create_at', 'update_at')
+    allowed_method = ('POST', 'READ', 'DELETE')
+
+    fields = ('id', 'subject',\
+              ('owner',('id', 'username', 'first_name')),\
+              ('user',('id', 'username', 'first_name'),))
+    exclude = ('ip', ('owner', ('password',)))
 
     def read(self, request):
         return Activity.objects.filter(user=request.user)
@@ -383,6 +414,12 @@ class ActivityHandler(BaseHandler):
 
         activity.user.add(request.user)
         return activity
+
+    def delete(self, request):
+        activity_id = request.GET.get("activity_id", 0)
+        activity = Activity.objects.get(pk=activity_id)
+        activity.delete()
+        return rc.DELETED
 
 class ActivityInviteHandler(BaseHandler):
     model = ActivityInvite
@@ -417,24 +454,19 @@ class ActivityInviteHandler(BaseHandler):
         except Activity.DoesNotExist:
             return rc.NOT_FOUND
         has_joined = activity.user.filter(id=invitation_user.id).count() > 0
-        activity.user.save()
+        invitation_user.save()
         activity.save()
         if not has_joined:
             activity.user.add(invitation_user)
         return invitation_user
 
-class UserHandler(MDHandler):
+class UserHandler(BaseHandler):
     model = User
-    allowed_method = ('POST', 'PUT',)
+    allowed_method = ('POST',)
+    fields = ('id', 'username', 'first_name', 'date_joined', 'last_login',)
     exclude = ('password', 'is_superuser', 'is_staff', 'email', 'is_active',
                'last_login', 'date_joined', 'last_name', )
     
-    def update(self, request):
-        if request.FILES.get("avatar", None):
-            self._storage_image(request.FILES['avatar'], request.user.id,\
-                                'avatar', [100, 200, 400])
-        return rc.ALL_OK
-
     def create(self, request):
         username = request.POST.get("username", None)
         password = request.POST.get("password", None)
@@ -457,3 +489,13 @@ class UserHandler(MDHandler):
 
     def read(self, request, username):
         return User.objects.get(username=username)
+
+class ProfileHandler(MDHandler):
+    model = User
+    allowed_method = ('PUT',)
+
+    def update(self, request):
+        if request.FILES.get("avatar", None):
+            self._storage_image(request.FILES['avatar'], request.user.id,\
+                                'avatar', [100, 200, 400])
+        return rc.ALL_OK

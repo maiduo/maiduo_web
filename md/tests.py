@@ -14,7 +14,7 @@ from django.test.client import Client
 from django.contrib.auth.models import User
 from django.conf import settings
 from pdb import Pdb, set_trace as bp
-from ios_notifications.models import Device
+from ios_notifications.models import Device, APNService
 from models import Message, Activity, ActivityInvite, Chat
 import handlers
 import os
@@ -35,7 +35,7 @@ class OAuthTestCase(TestCase):
             'grant_type': 'password',
             'scope': '',
         }
-        rsp = self.client.post('/api/token/', request_token)
+        rsp = self.client.post('/api/authentication/', request_token)
         self.assertEquals(200, rsp.status_code)
 
         json = simplejson.loads(rsp.content)
@@ -68,8 +68,10 @@ class ActivityModelTest(TestCase):
     fixtures = ['users', 'activity.json', 'ios_notifications.json']
 
     def test_devices(self):
-        devices = Activity.objects.get(pk=1).devices("dev")
-        self.assertEquals(3, len(devices))
+        service = APNService.objects.get(name="dev")
+        user1 = User.objects.get(pk=1)
+        devices = Activity.objects.get(pk=1).devices(service, exclude=[user1])
+        self.assertEquals(2, len(devices))
         self.assertEquals("dev", devices[0].service.name)
 
 class ActivityHandlerTest(OAuthTestCase):
@@ -80,6 +82,18 @@ class ActivityHandlerTest(OAuthTestCase):
         self.assertEquals(200, rsp.status_code)
         self.assertEquals(2, len(activities))
         self.assertEquals(1, activities[0]['owner']['id'])
+
+    def test_delete(self):
+        request = {\
+            "access_token": self.access_token,
+            "activity_id": 1,
+        }
+
+        rsp = self.client.delete('/api/activity/', request)
+
+        self.assertEquals(204, rsp.status_code)
+
+        self.assertEquals(0, len(Activity.objects.filter(pk=1)))
 
 
     def test_create(self):
@@ -117,21 +131,15 @@ class ActivityInviteHandlerTest(OAuthTestCase):
         self.assertEquals(1, activity.user.filter(id=user.id).count())
 
 
-class UserHandlerTest(TestCase):
-
-    fixtures = ['users', 'activity.json']
-    
-    def setUp(self):
-        self.client = Client()
-
+class UserHandlerTest(OAuthTestCase):
     def test_upload_avatar(self):
         user_data = {\
             "access_token": self.access_token,
             "avatar": open("resources/avatar.png"),
         }
 
-        rsp = self.client.put("/api/user/", user_data)
-        print rsp.content
+        rsp = self.client.put("/api/profile/", user_data)
+        self.assertEquals(200, rsp.status_code)
 
 
     def test_create_user(self):
@@ -174,9 +182,10 @@ class MessageHandlerTest(OAuthTestCase):
         handlers.send_notification = mock_and_assert_send_notification
         hd.create(request)
         handlers.send_notification = original_send_notification
-
         msg = Message.objects.get(body="Message.")
         self.assertNotEquals(None, msg)
+
+        activity = Activity.objects.get(pk=1)
 
         handlers.push_models = ios_notifications_models
         handlers.utils = utils_module
@@ -250,19 +259,20 @@ class AuthenticationHandlerTest(TestCase):
 
     @override_settings(DEBUG=True)
     def test_authenticate(self):
+        token = 'a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c27'
         request_token = {\
             'client_id': '2dc5d858f1f441aa8e957b82ce248816',
             'username': 'test',
             'password': '123123',
             'grant_type': 'password',
             'scope': '',
-            'device_token': '<token>',
+            'device_token': token,
         }
         rsp = self.client.post('/api/authentication/', request_token)
 
         self.assertEquals(200, rsp.status_code)
         user = User.objects.get(username="test")
-        devices = Device.objects.filter(users=user, token="<token>",\
+        devices = Device.objects.filter(users=user, token=token,\
                                         service__name="dev").count()
         self.assertEquals(1, devices)
 
@@ -282,6 +292,22 @@ class AuthenticationHandlerTest(TestCase):
         devices = Device.objects.filter(users=user, token="",\
                                         service__name="dev").count()
         self.assertEquals(0, devices)
+
+class LogoutHandlerTest(OAuthTestCase):
+    def test_authenticate_delete(self):
+        t = "a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c27"
+        request = {\
+            "access_token": self.access_token,
+            "device_token": t
+        }
+        rsp = self.client.post("/api/logout/", request)
+        user1 = User.objects.get(pk=1)
+
+        for device in user1.ios_devices.all():
+            if device.token == t:
+                self.assertTrue(False)
+        
+        self.assertTrue(True)
 
 class ChatsHandlerTest(OAuthTestCase):
     def test_read(self):

@@ -3,7 +3,7 @@ from piston.resource import Resource
 from handlers import MessageHandler, ChatHandler, ChatsHandler, UserHandler,\
                      AuthenticationHandler, ActivityHandler,\
                      MessageAddonHandler, MessagesHandler,\
-                     ActivityInviteHandler
+                     ActivityInviteHandler, LogoutHandler, ProfileHandler
 from oauthost.utils import PistonAuthHelper
 import oauthost.urls
 
@@ -14,15 +14,19 @@ message_addon_handler = Resource(MessageAddonHandler, authentication=auth)
 chat_handler = Resource(ChatHandler, authentication=auth)
 chats_handler = Resource(ChatsHandler, authentication=auth)
 user_handler = Resource(UserHandler)
+profile_handler = Resource(ProfileHandler, authentication=auth)
 invite_handler = Resource(ActivityInviteHandler, authentication=auth)
 authentication_handler = Resource(AuthenticationHandler)
+logout_handler = Resource(LogoutHandler, authentication=auth)
 activity_handler = Resource(ActivityHandler, authentication=auth)
 
 urlpatterns = oauthost.urls.urlpatterns + patterns('',
     # url(r'^authentication/$', 'oauthost.auth_views.endpoint_token',\
     #    name='oauthost_token'),
     url(r'^authentication/$', authentication_handler), 
+    url(r'^logout/$', logout_handler),
     url(r'^user/$', user_handler),
+    url(r'^profile/$', profile_handler),
     url(r'^user/(?P<username>[^/]+)/$', user_handler),
     url(r'^message/$', message_handler),
     url(r'^message/addon/$', message_addon_handler),
