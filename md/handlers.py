@@ -367,6 +367,8 @@ class AuthenticationHandler(BaseHandler):
         JSON['user'] = user
         return JSON
 
+
+
 class LogoutHandler(BaseHandler):
     allowed_method = ('POST',)
     fields = ('id',)
@@ -383,7 +385,7 @@ class LogoutHandler(BaseHandler):
 
 class ActivityHandler(BaseHandler):
     model = Activity
-    allowed_method = ('POST', 'READ')
+    allowed_method = ('POST', 'READ', 'DELETE')
 
     fields = ('id', 'subject',\
               ('owner',('id', 'username', 'first_name')),\
@@ -408,6 +410,12 @@ class ActivityHandler(BaseHandler):
 
         activity.user.add(request.user)
         return activity
+
+    def delete(self, request):
+        activity_id = request.GET.get("activity_id", 0)
+        activity = Activity.objects.get(pk=activity_id)
+        activity.delete()
+        return rc.DELETED
 
 class ActivityInviteHandler(BaseHandler):
     model = ActivityInvite
