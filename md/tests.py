@@ -14,7 +14,7 @@ from django.test.client import Client
 from django.contrib.auth.models import User
 from django.conf import settings
 from pdb import Pdb, set_trace as bp
-from ios_notifications.models import Device
+from ios_notifications.models import Device, APNService
 from models import Message, Activity, ActivityInvite, Chat
 import handlers
 import os
@@ -68,8 +68,10 @@ class ActivityModelTest(TestCase):
     fixtures = ['users', 'activity.json', 'ios_notifications.json']
 
     def test_devices(self):
-        devices = Activity.objects.get(pk=1).devices("dev")
-        self.assertEquals(3, len(devices))
+        service = APNService.objects.get(name="dev")
+        user1 = User.objects.get(pk=1)
+        devices = Activity.objects.get(pk=1).devices(service, exclude=[user1])
+        self.assertEquals(2, len(devices))
         self.assertEquals("dev", devices[0].service.name)
 
 class ActivityHandlerTest(OAuthTestCase):
@@ -272,6 +274,22 @@ class AuthenticationHandlerTest(TestCase):
         devices = Device.objects.filter(users=user, token="",\
                                         service__name="dev").count()
         self.assertEquals(0, devices)
+
+class LogoutHandlerTest(OAuthTestCase):
+    def test_authenticate_delete(self):
+        t = "a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c27"
+        request = {\
+            "access_token": self.access_token,
+            "device_token": t
+        }
+        rsp = self.client.post("/api/logout/", request)
+        user1 = User.objects.get(pk=1)
+
+        for device in user1.ios_devices.all():
+            if device.token == t:
+                self.assertTrue(False)
+        
+        self.assertTrue(True)
 
 class ChatsHandlerTest(OAuthTestCase):
     def test_read(self):

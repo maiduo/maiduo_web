@@ -212,8 +212,9 @@ class ChatHandler(BaseHandler):
             'chat_text': text,
             'type': 'chat',
         }
-        send_notification(activity.devices(service, exclude=[request.user]), \
-                          service, notification)
+        devices = activity.devices(service, exclude=[request.user])
+        bp()
+        send_notification(devices, service, notification)
         return chat
 
 class ChatsHandler(BaseHandler):
@@ -252,6 +253,7 @@ class ChatsHandler(BaseHandler):
 
 class AuthenticationHandler(BaseHandler):
     allowed_method =('POST',)
+    model = User
 
     def bind_user_and_device_token(self, user, device_token, service_name):
         query = {\
@@ -274,6 +276,7 @@ class AuthenticationHandler(BaseHandler):
             user.ios_devices.add(device)
 
 
+
     def create(self, request):
         rsp = auth_views.endpoint_token(request)
         JSON = simplejson.loads(rsp.content)
@@ -288,6 +291,17 @@ class AuthenticationHandler(BaseHandler):
 
         JSON['user'] = user
         return JSON
+
+class LogoutHandler(BaseHandler):
+    allowed_method = ('POST',)
+    models = User
+
+    def create(self, request):
+        device_token = request.POST.get("device_token")
+
+        request.user.ios_devices.filter(token=device_token).delete()
+        devices = request.user.ios_devices.all()
+        return rc.DELETED
 
 
 class ActivityHandler(BaseHandler):
@@ -348,7 +362,7 @@ class ActivityInviteHandler(BaseHandler):
         except Activity.DoesNotExist:
             return rc.NOT_FOUND
         has_joined = activity.user.filter(id=invitation_user.id).count() > 0
-        activity.user.save()
+        invitation_user.save()
         activity.save()
         if not has_joined:
             activity.user.add(invitation_user)
