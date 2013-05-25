@@ -79,6 +79,7 @@ class ActivityHandlerTest(OAuthTestCase):
         activity_url = '/api/activity/?access_token=%s' % self.access_token
         rsp = self.client.get(activity_url)
         activities = simplejson.loads(rsp.content)
+        print rsp.content
         self.assertEquals(200, rsp.status_code)
         self.assertEquals(2, len(activities))
         self.assertEquals(1, activities[0]['owner']['id'])
