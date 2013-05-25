@@ -213,7 +213,6 @@ class ChatHandler(BaseHandler):
             'type': 'chat',
         }
         devices = activity.devices(service, exclude=[request.user])
-        bp()
         send_notification(devices, service, notification)
         return chat
 
@@ -263,6 +262,13 @@ class AuthenticationHandler(BaseHandler):
         }
         not_bind = push_models.Device.objects.filter(**query).count() == 0
         empty_token = '' == device_token
+
+        # kick_user_with_device
+        push_models.Device\
+            .objects\
+            .filter(token=empty_token, service__name=service_name)\
+            .delete()
+
         if not_bind and not empty_token:
             service = push_models.APNService.objects.get(name=service_name)
             kw_device = {\
@@ -294,7 +300,9 @@ class AuthenticationHandler(BaseHandler):
 
 class LogoutHandler(BaseHandler):
     allowed_method = ('POST',)
-    models = User
+    fields = ('id',)
+    exclude = ('password', 'ip')
+    model = User
 
     def create(self, request):
         device_token = request.POST.get("device_token")
@@ -307,8 +315,11 @@ class LogoutHandler(BaseHandler):
 class ActivityHandler(BaseHandler):
     model = Activity
     allowed_method = ('POST', 'READ')
-    fields = ('id', 'subject', 'owner', 'user',)
-    exclude = ('ip', 'create_at', 'update_at')
+
+    fields = ('id', 'subject',\
+              ('owner',('id', 'username', 'first_name')),\
+              'user',)
+    exclude = ('ip', ('owner', ('password',)))
 
     def read(self, request):
         return Activity.objects.filter(user=request.user)
