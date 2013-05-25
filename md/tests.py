@@ -171,6 +171,8 @@ class MessageHandlerTest(OAuthTestCase):
         msg = Message.objects.get(body="Message.")
         self.assertNotEquals(None, msg)
 
+        activity = Activity.objects.get(pk=1)
+
         handlers.push_models = ios_notifications_models
         handlers.utils = utils_module
 
@@ -249,7 +251,7 @@ class AuthenticationHandlerTest(TestCase):
             'password': '123123',
             'grant_type': 'password',
             'scope': '',
-            'device_token': '<token>',
+            'device_token': 'a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c27',
         }
         rsp = self.client.post('/api/authentication/', request_token)
 
