@@ -78,11 +78,23 @@ class ActivityHandlerTest(OAuthTestCase):
     def test_read(self):
         activity_url = '/api/activity/?access_token=%s' % self.access_token
         rsp = self.client.get(activity_url)
-        print rsp.content
         activities = simplejson.loads(rsp.content)
         self.assertEquals(200, rsp.status_code)
         self.assertEquals(2, len(activities))
         self.assertEquals(1, activities[0]['owner']['id'])
+
+    def test_delete(self):
+        request = {\
+            "access_token": self.access_token,
+            "activity_id": 1,
+        }
+
+        rsp = self.client.delete('/api/activity/', request)
+        print rsp.content
+
+        self.assertEquals(204, rsp.status_code)
+
+        self.assertEquals(0, len(Activity.objects.filter(pk=1)))
 
 
     def test_create(self):
@@ -194,7 +206,7 @@ class MessageAddonHandlerTest(OAuthTestCase):
             "attachment": attachment
         }
         rsp = self.client.post("/api/message/addon/", addons_data)
-        self.assertEquals(200, rsp.status_code)
+        self.assertEquals(201, rsp.status_code)
 
 
 class HandlerTest(TestCase):
