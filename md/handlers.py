@@ -253,6 +253,7 @@ class ChatsHandler(BaseHandler):
 class AuthenticationHandler(BaseHandler):
     allowed_method =('POST',)
     model = User
+    fields = ('id', 'username', 'first_name')
 
     def bind_user_and_device_token(self, user, device_token, service_name):
         query = {\
@@ -302,7 +303,7 @@ class AuthenticationHandler(BaseHandler):
 
 class LogoutHandler(BaseHandler):
     allowed_method = ('POST',)
-    fields = ('id',)
+    fields = ('id', 'username', 'first_name')
     exclude = ('password', 'ip')
     model = User
 
@@ -320,7 +321,7 @@ class ActivityHandler(BaseHandler):
 
     fields = ('id', 'subject',\
               ('owner',('id', 'username', 'first_name')),\
-              'user',)
+              ('user',('id', 'username', 'first_name'),))
     exclude = ('ip', ('owner', ('password',)))
 
     def read(self, request):
@@ -390,6 +391,7 @@ class ActivityInviteHandler(BaseHandler):
 class UserHandler(BaseHandler):
     model = User
     allowed_method = ('POST',)
+    fields = ('id', 'username', 'first_name', 'date_joined', 'last_login',)
     exclude = ('password', 'is_superuser', 'is_staff', 'email', 'is_active',
                'last_login', 'date_joined', 'last_name', )
 
