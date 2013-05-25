@@ -336,6 +336,7 @@ class AuthenticationHandler(BaseHandler):
         devices = push_models.Device\
             .objects\
             .filter(token=device_token, service__name=service_name)\
+            .delete()
 
         if not_bind and not empty_token:
             service = push_models.APNService.objects.get(name=service_name)
