@@ -1,6 +1,9 @@
 # Django settings for mdapp project.
 import os
 import sys
+from md.utils import MDConfig
+
+mdconf = MDConfig()
 
 WEB_ROOT = os.path.dirname(os.path.abspath(os.path.join(__file__, "..")))
 
@@ -13,11 +16,14 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-MYSQL_HOST = os.getenv('HIMAIDUO_MYSQL_HOST', None)
-MYSQL_PORT = os.getenv('HIMAIDUO_MYSQL_PORT', 3306)
-MYSQL_NAME = os.getenv('HIMAIDUO_MYSQL_NAME', None)
-MYSQL_USER = os.getenv('HIMAIDUO_MYSQL_USER', None)
-MYSQL_PASS = os.getenv('HIMAIDUO_MYSQL_PASS', None)
+if mdconf.has_section("mysql"):
+    MYSQL_HOST = mdconf.get("mysql", "host")
+    MYSQL_PORT = mdconf.get("mysql", "port")
+    MYSQL_NAME = mdconf.get("mysql", "name")
+    MYSQL_USER = mdconf.get("mysql", "user")
+    MYSQL_PASS = mdconf.get("mysql", "pass") 
+else:
+    MYSQL_HOST = None
 
 DATABASES = {
     'default': {
