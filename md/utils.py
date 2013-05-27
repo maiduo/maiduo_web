@@ -24,6 +24,14 @@ def copy_file(src, dest):
 class NotFound(Exception):
     pass
 
+class Singleton(object):
+    _instance = None
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(Singleton, cls).__new__(
+                                cls, *args, **kwargs)
+        return cls._instance
+
 def scan_default_location(filename):
     home = expanduser("~")
     for directory in [getcwd(), home, '/etc/']:
@@ -33,7 +41,7 @@ def scan_default_location(filename):
 
     raise NotFound()
 
-class MDConfig(ConfigParser.SafeConfigParser):
+class MDConfig(ConfigParser.SafeConfigParser, Singleton):
     def __init__(self, config_path = None):
         if not config_path:
             config_path = scan_default_location("md.cfg")

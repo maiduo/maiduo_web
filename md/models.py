@@ -106,7 +106,7 @@ class Message(models.Model):
                                     default="Text", max_length=1)
     body = models.TextField()
     addons = models.IntegerField(default=0)
-    active = models.BooleanField(default=True)
+    stash = models.BooleanField(default=False)
     ip = models.GenericIPAddressField('IPv4')
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now_add=True, auto_now=True)
