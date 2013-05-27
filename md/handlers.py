@@ -17,11 +17,17 @@ from os.path import basename, dirname, join
 from ios_notifications import models as push_models
 from urllib import urlopen
 from os.path import join
+from pdb import set_trace as bp
 import os
 import utils
 import PIL.Image
 import random
-from pdb import set_trace as bp
+import qiniu.config
+import qiniu.auth_token
+
+cfg = utils.MDConfig()
+qiniu.config.ACCESS_KEY = cfg.get("storage", "access_key")
+qiniu.config.SECRET_KEY = cfg.get("storage", "secret_key")
 
 # 构建消息发送功能时，必须使用Mock的Notification相关对象，也就是说不能真的把消息
 # 推送出去，所以没有直接引入APNService等对象，而是引入模块，以方便在测试用例中替
@@ -235,19 +241,26 @@ class MessageAddonHandler(BaseHandler):
 
     def create(self, request):
         message_id = request.POST.get("message_id", 0)
+        ext = request.POST.get("ext", "")
         extra = request.POST.get("extra", "{}")
         try:
             message = Message.objects.get(pk=message_id)
         except Message.DoesNotExist:
             return rc.NOT_FOUND
 
-
         addon = MessageAddon(message=message, extra=extra)
         addon.save()
 
-        self._storage_message_image(request.FILES['attachment'], addon)
+        cfg = utils.MDConfig()
+        bucket = cfg.get("storage", "bucket")
+        policy = qiniu.auth_token.PutPolicy("%s:%d.%s" %(bucket, addon.id, ext))
+        policy.expires = 3600 * 24
+        upload_token = policy.token()
 
-        return addon
+        return {\
+            "addon": addon,
+            "upload_token": upload_token,
+        }
 
 
 def send_notification(devices, service, notification):

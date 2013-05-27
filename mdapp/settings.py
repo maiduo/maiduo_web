@@ -7,6 +7,8 @@ mdconf = MDConfig()
 
 WEB_ROOT = os.path.dirname(os.path.abspath(os.path.join(__file__, "..")))
 
+sys.path.append(os.path.join(WEB_ROOT, "vendor", "qiniu"))
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 

@@ -3,3 +3,4 @@
 *.sqlite3
 src/
 media/user/
+vendor
