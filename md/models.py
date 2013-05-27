@@ -116,11 +116,13 @@ class Message(models.Model):
 
 class MessageAddon(models.Model):
     message = models.ForeignKey(Message)
+    stash = models.BooleanField(default=True)
     extra = models.CharField(max_length=255, default="", null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        self.message.addons += 1
-        self.message.save()
+        if not self.pk:
+            self.message.addons += 1
+            self.message.save()
 
         super(MessageAddon, self).save(*args, **kwargs)
 

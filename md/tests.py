@@ -15,7 +15,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from pdb import Pdb, set_trace as bp
 from ios_notifications.models import Device, APNService
-from models import Message, Activity, ActivityInvite, Chat
+from models import Message, MessageAddon, Activity, ActivityInvite, Chat
 import handlers
 import os
 import utils
@@ -250,19 +250,34 @@ class MessagesHandlerTest(OAuthTestCase):
                               % self.access_token)
         self.assertEquals(200, rsp.status_code)
 
+class MessageAddonModelTest(TestCase):
+    fixtures = ['activity']
+    def test_save(self):
+        msg = Message.objects.get(pk=1)
+        msg_addon = MessageAddon(message=msg, stash=False, extra="")
+        msg_addon.save()
+
+        self.assertEquals(1, msg.addons)
+
+        msg_addon = MessageAddon(message=msg, stash=False, extra="")
+        self.assertEquals(1, msg.addons)
+
 class MessageAddonHandlerTest(OAuthTestCase):
     fixtures = ['users', 'oauthost.json', 'activity.json', \
                 'ios_notifications.json']
 
     def test_create(self):
-        attachment = file("resources/10x10.png", "r")
         addons_data = {\
             "message_id": 1,
             "access_token": self.access_token,
-            "attachment": attachment
         }
         rsp = self.client.post("/api/message/addon/", addons_data)
+        addon = simplejson.loads(rsp.content)
         self.assertEquals(200, rsp.status_code)
+
+        self.assertTrue(addon.has_key("upload_token"))
+        self.assertTrue(addon['addon'].has_key('id'))
+        self.assertTrue(addon['addon'].has_key('extra'))
 
 
 class HandlerTest(TestCase):
