@@ -532,7 +532,12 @@ class ProfileHandler(MDHandler):
     allowed_method = ('PUT',)
 
     def update(self, request):
-        if request.FILES.get("avatar", None):
-            self._storage_image(request.FILES['avatar'], request.user.id,\
-                                'avatar', [100, 200, 400])
-        return rc.ALL_OK
+        cfg = utils.MDConfig()
+        bucket = cfg.get("storage", "bucket")
+        policy = qiniu.auth_token.PutPolicy("%s:%d.jpg" %(bucket,\
+                                                          request.user.id))
+        policy.expires = 3600 * 24
+        upload_token = policy.token()
+        return {\
+            "upload_token": upload_token,
+        }
