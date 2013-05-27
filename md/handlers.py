@@ -529,3 +529,19 @@ class UserHandler(MDHandler):
 
     def read(self, request, username):
         return User.objects.get(username=username)
+
+class ProfileHandler(MDHandler):
+    model = User
+    allowed_method = ('PUT',)
+
+    def update(self, request):
+        cfg = utils.MDConfig()
+        bucket = cfg.get("storage", "bucket")
+        policy = qiniu.auth_token.PutPolicy("%s:%d.jpg" %(bucket,\
+                                                          request.user.id))
+        policy.expires = 3600 * 24
+        upload_token = policy.token()
+        return {\
+            "upload_token": upload_token,
+        }
+>>>>>>> d7dba3d... 获得头像上传的token。
