@@ -115,14 +115,36 @@ class MessagesHandler(BaseHandler):
 
 class MessageHandler(BaseHandler):
     model = Message
-    allowed_method = ('GET', 'POST',)
+    allowed_method = ('GET', 'POST', 'PUT',)
     exclude = ('ip',)
 
     def read(request):
         pass
 
-    #@oauth_required(scope_auto=True)
-    #@validate(MessageForm)
+    def update(self, request):
+        stash = bool(request.PUT.get("stash", False))
+        message_id = request.PUT.get("message_id", 0)
+        service = request.PUT.get("service", "dev")
+        msg = Message.objects.get(pk=message_id)
+        if not msg.stash == stash:
+            msg.stash = stash
+            msg.save()
+
+        if not stash:
+            activity = msg.activity
+            push_text = u"%s:%s" % (request.user.first_name, msg.body)
+            notification = push_models.Notification(message=push_text)
+            notification.extra = {\
+                "activity_id": activity.id,
+                "message_id": msg.id,
+                "user_id": request.user.id,
+                "message_body": push_text,
+                "message_type": msg.message_type,
+                "type": "message",
+            }
+            devices = activity.devices(service, exclude=[request.user])
+            send_notification(devices, service, notification)
+        return msg
 
     def create(self, request):
         attrs = self.flatten_dict(request.POST)
@@ -130,6 +152,7 @@ class MessageHandler(BaseHandler):
         message_body = attrs.get("body", None)
         activity_id = attrs.get("activity_id", 0)
         service = attrs.get("service", "dev")
+        stash = attrs.get("stash", False)
         try:
             activity = Activity.objects.get(pk=activity_id)
         except Activity.DoesNotExist:
@@ -139,18 +162,19 @@ class MessageHandler(BaseHandler):
                       ip=ip_address, message_type="T")
         msg.save()
         #self._storage_message_image(request, msg)
-        push_text = u"%s:%s" % (request.user.first_name, message_body)
-        notification = push_models.Notification(message=push_text)
-        notification.extra = {\
-            "activity_id": activity_id,
-            "message_id": msg.id,
-            "user_id": request.user.id,
-            "message_body": message_body,
-            "message_type": msg.message_type,
-            "type": "message",
-        }
-        devices = activity.devices(service, exclude=[request.user])
-        send_notification(devices, service, notification)
+        if not stash:
+            push_text = u"%s:%s" % (request.user.first_name, message_body)
+            notification = push_models.Notification(message=push_text)
+            notification.extra = {\
+                "activity_id": activity_id,
+                "message_id": msg.id,
+                "user_id": request.user.id,
+                "message_body": push_text,
+                "message_type": msg.message_type,
+                "type": "message",
+            }
+            devices = activity.devices(service, exclude=[request.user])
+            send_notification(devices, service, notification)
         return msg
 
 class MessageAddonHandler(BaseHandler):

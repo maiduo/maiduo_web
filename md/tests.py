@@ -199,6 +199,60 @@ class MessageHandlerTest(OAuthTestCase):
         handlers.push_models = ios_notifications_models
         handlers.utils = utils_module
 
+    def test_create_stash_message(self):
+        ios_notifications_models = handlers.push_models
+        utils_module = handlers.utils
+
+        handlers.push_models = mock.MagicMock()
+        handlers.utils = mock.MagicMock()
+        handlers.utils.get_client_ip.return_value = "127.0.0.1"
+        hd = handlers.MessageHandler()
+        request = mock.MagicMock()
+        request.user = User.objects.get(username='test')
+        request.POST = {"activity_id": 1, "body": "Message.", "stash": True}
+
+        def mock_and_assert_send_notification(devices, service, notification):
+            self.assertEquals(True, False)
+
+        original_send_notification = handlers.send_notification
+        handlers.send_notification = mock_and_assert_send_notification
+        hd.create(request)
+        handlers.send_notification = original_send_notification
+        msg = Message.objects.get(body="Message.")
+        self.assertNotEquals(None, msg)
+
+        activity = Activity.objects.get(pk=1)
+
+        handlers.push_models = ios_notifications_models
+        handlers.utils = utils_module
+
+    def test_update(self):
+        ios_notifications_models = handlers.push_models
+        utils_module = handlers.utils
+
+        handlers.push_models = mock.MagicMock()
+        handlers.utils = mock.MagicMock()
+        handlers.utils.get_client_ip.return_value = "127.0.0.1"
+        hd = handlers.MessageHandler()
+        request = mock.MagicMock()
+        request.user = User.objects.get(username='test')
+        request.PUT = {"message_id": 1}
+
+        def mock_and_assert_send_notification(devices, service, notification):
+            self.assertEquals(True, True)
+
+        original_send_notification = handlers.send_notification
+        handlers.send_notification = mock_and_assert_send_notification
+        hd.update(request)
+        handlers.send_notification = original_send_notification
+        msg = Message.objects.get(pk=1)
+        self.assertEquals(False, msg.stash)
+
+        activity = Activity.objects.get(pk=1)
+
+        handlers.push_models = ios_notifications_models
+        handlers.utils = utils_module
+
 class MessagesHandlerTest(OAuthTestCase):
     def test_read(self):
         rsp = self.client.get("/api/messages/1/?access_token=%s"\
