@@ -536,7 +536,7 @@ class ProfileHandler(MDHandler):
         bucket = cfg.get("storage", "bucket")
         uid = request.user.id
         key = "%d/%d.jpg" % (uid % 1000, uid)
-        policy = qiniu.auth_token.PutPolicy("%s:%d.jpg" %(bucket, key))
+        policy = qiniu.auth_token.PutPolicy("%s:%s" %(bucket, key))
         policy.expires = 3600 * 24
         upload_token = policy.token()
         return {\
