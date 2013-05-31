@@ -33,6 +33,8 @@ qiniu.config.SECRET_KEY = cfg.get("storage", "secret_key")
 # 推送出去，所以没有直接引入APNService等对象，而是引入模块，以方便在测试用例中替
 # 换
 
+USER_FIELDS = ('user', ('id', 'first_name', 'date_joined', 'last_login'))
+
 class SMS(object):
     def send(mobile, content):
         sms_url = "http://www.smsbao.com/sms?u=himaiduo&p=&m=%s&c=%s"
@@ -123,6 +125,8 @@ class MessageHandler(BaseHandler):
     model = Message
     allowed_method = ('GET', 'POST', 'PUT',)
     exclude = ('ip',)
+    fields = ('id', 'body', 'message_type', 'create_at', 'stash', USER_FIELDS,\
+              'activity')
 
     def read(request):
         pass
@@ -158,16 +162,31 @@ class MessageHandler(BaseHandler):
         message_body = attrs.get("body", None)
         activity_id = attrs.get("activity_id", 0)
         service = attrs.get("service", "dev")
-        stash = attrs.get("stash", False)
+        stash = bool(attrs.get("stash", False))
         try:
             activity = Activity.objects.get(pk=activity_id)
         except Activity.DoesNotExist:
             return rc.NOT_FOUND
-
         msg = Message(user=request.user, activity=activity, body=attrs['body'],\
-                      ip=ip_address, message_type="T")
+                      ip=ip_address, message_type="T", stash=stash)
+
         msg.save()
+
+        #Message.objects.filter(id=msg.id).update(stash=stash)
+        """
+        msg_id = msg.id
+        msg = None
+        msg = Message.objects.get(pk=msg_id)
+        msg.stash = stash
+        msg.save()
+        try:
+            msg.stash = 0
+            msg.save()
+        except Exception, e:
+            print e
+            bp()
         #self._storage_message_image(request, msg)
+        """
         if not stash:
             push_text = u"%s:%s" % (request.user.first_name, message_body)
             notification = push_models.Notification(message=push_text)
