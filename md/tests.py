@@ -180,7 +180,6 @@ class MessageHandlerTest(OAuthTestCase):
                 'ios_notifications.json']
 
     def test_create_text_message(self):
-        """
         ios_notifications_models = handlers.push_models
         utils_module = handlers.utils
 
@@ -208,39 +207,18 @@ class MessageHandlerTest(OAuthTestCase):
         handlers.push_models = ios_notifications_models
         handlers.utils = utils_module
 
-
     def test_create_stash_message(self):
-        ios_notifications_models = handlers.push_models
-        utils_module = handlers.utils
+        request = {\
+            "activity_id": 1,
+            "access_token": self.access_token,
+            "body": "hi",
+            "stash": True
+        }
+        rsp = self.client.post('/api/message/', request)
+        msg = simplejson.loads(rsp.content)
 
-        handlers.push_models = mock.MagicMock()
-        handlers.utils = mock.MagicMock()
-        handlers.utils.get_client_ip.return_value = "127.0.0.1"
-        hd = handlers.MessageHandler()
-        request = mock.MagicMock()
-        request.user = User.objects.get(username='test')
-        request.POST = {"activity_id": 1, "body": "Message.", "stash": True}
-
-        msg = hd.create(request)
+        msg = Message.objects.get(pk=msg['id'])
         self.assertEquals(True, msg.stash)
-
-        handlers.push_models = ios_notifications_models
-        handlers.utils = utils_module
-
-        def mock_and_assert_send_notification(devices, service, notification):
-            self.assertEquals(True, False)
-
-        original_send_notification = handlers.send_notification
-        handlers.send_notification = mock_and_assert_send_notification
-        hd.create(request)
-        handlers.send_notification = original_send_notification
-        msg = Message.objects.get(body="Message.")
-        self.assertNotEquals(None, msg)
-
-        activity = Activity.objects.get(pk=1)
-
-        handlers.push_models = ios_notifications_models
-        handlers.utils = utils_module
 
     def test_update(self):
         ios_notifications_models = handlers.push_models
