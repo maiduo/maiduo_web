@@ -5,6 +5,8 @@ from django.contrib.auth.models import User
 from ios_notifications.models import Device, APNService
 from pdb import set_trace as bp
 
+import datetime
+
 MESSAGE_TYPE_CHOICES = (\
     ("T", "Text",),
     ("V", "Video", ),
@@ -118,6 +120,8 @@ class MessageAddon(models.Model):
     message = models.ForeignKey(Message)
     stash = models.BooleanField(default=True)
     extra = models.CharField(max_length=255, default="", null=True, blank=True)
+    create_at = models.DateTimeField(auto_now_add=True,\
+                                     default=datetime.datetime.now())
 
     def save(self, *args, **kwargs):
         if not self.pk:
