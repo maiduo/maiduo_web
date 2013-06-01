@@ -161,6 +161,12 @@ class UserHandlerTest(OAuthTestCase):
         self.assertNotEquals([], joined)
         self.assertEquals(True, user.is_active)
 
+class MessageModelTest(TestCase):
+    def test_save(self):
+        msg = Message.objects.create(user_id=1, activity_id=1, body="hi",\
+                                     ip="127.0.0.1",message_type="T",\
+                                     stash=True)
+
 class MessageHandlerTest(OAuthTestCase):
     fixtures = ['users', 'oauthost.json', 'activity.json', \
                 'ios_notifications.json']
@@ -193,31 +199,17 @@ class MessageHandlerTest(OAuthTestCase):
         handlers.utils = utils_module
 
     def test_create_stash_message(self):
-        ios_notifications_models = handlers.push_models
-        utils_module = handlers.utils
+        request = {\
+            "activity_id": 1,
+            "access_token": self.access_token,
+            "body": "hi",
+            "stash": True
+        }
+        rsp = self.client.post('/api/message/', request)
+        msg = simplejson.loads(rsp.content)
 
-        handlers.push_models = mock.MagicMock()
-        handlers.utils = mock.MagicMock()
-        handlers.utils.get_client_ip.return_value = "127.0.0.1"
-        hd = handlers.MessageHandler()
-        request = mock.MagicMock()
-        request.user = User.objects.get(username='test')
-        request.POST = {"activity_id": 1, "body": "Message.", "stash": True}
-
-        def mock_and_assert_send_notification(devices, service, notification):
-            self.assertEquals(True, False)
-
-        original_send_notification = handlers.send_notification
-        handlers.send_notification = mock_and_assert_send_notification
-        hd.create(request)
-        handlers.send_notification = original_send_notification
-        msg = Message.objects.get(body="Message.")
-        self.assertNotEquals(None, msg)
-
-        activity = Activity.objects.get(pk=1)
-
-        handlers.push_models = ios_notifications_models
-        handlers.utils = utils_module
+        msg = Message.objects.get(pk=msg['id'])
+        self.assertEquals(True, msg.stash)
 
     def test_update(self):
         ios_notifications_models = handlers.push_models
@@ -245,6 +237,7 @@ class MessageHandlerTest(OAuthTestCase):
 
         handlers.push_models = ios_notifications_models
         handlers.utils = utils_module
+
 
 class MessagesHandlerTest(OAuthTestCase):
     def test_read(self):
