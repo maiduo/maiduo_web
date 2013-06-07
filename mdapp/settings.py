@@ -174,6 +174,7 @@ INSTALLED_APPS = (
     'ios_notifications',
     'oauthost',
     'md',
+    'mock_qiniu',
 ) + APPS
 
 # A sample logging configuration. The only tangible logging

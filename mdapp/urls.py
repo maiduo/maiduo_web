@@ -10,6 +10,7 @@ urlpatterns = patterns('',
     url(r'^aps/', include('ios_notifications.urls')),
     # url(r'^api/', include('oauthost.urls')),
     url(r'^api/', include('md.urls')),
+    url(r'^qiniu/', include('mock_qiniu.urls')),
 
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin.site.urls)),
