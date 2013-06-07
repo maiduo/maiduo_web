@@ -457,3 +457,20 @@ class UtilsTest(TestCase):
 
         dest.close()
         src.close()
+
+class MDConfigTest(TestCase):
+    def setUp(self):
+        self.cfg = utils.MDConfig()
+
+    def test_config(self):
+        import ConfigParser
+        try:
+            self.cfg.get("mysql", "no_operation")
+        except ConfigParser.NoOptionError:
+            self.assertTrue(True)
+        else:
+            self.assertTrue(False)
+
+        self.assertTrue(self.cfg.has_option('common', 'enviroment'))
+        self.assertTrue(self.cfg.has_option('sqlite', 'name'))
+

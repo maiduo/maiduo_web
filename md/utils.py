@@ -2,6 +2,7 @@
 from pdb import set_trace as bp
 from os import getcwd
 from os.path import isfile, expanduser, join
+from StringIO import StringIO
 import ConfigParser
 
 
@@ -41,12 +42,54 @@ def scan_default_location(filename):
 
     raise NotFound()
 
+DEFAULT_MD_CONFIG = StringIO("""[storage]
+access_key =
+secret_key =
+bucket = maiduo-test
+
+[common]
+database = sqlite
+enviroment = dev
+
+[django_setting]
+media_root =
+
+
+[mysql]
+host =
+port = 3306
+user = root
+pass = 
+name = himaiduo
+
+[sqlite]
+name = dev.sqlite
+""")
+
 class MDConfig(ConfigParser.SafeConfigParser, Singleton):
-    def __init__(self, config_path = None):
-        if not config_path:
-            config_path = scan_default_location("md.cfg")
+    def __init__(self, config_fp = None):
+        if hasattr(self, 'initialized'):
+            return
+
+        if not config_fp:
+            config_fp = file(scan_default_location("md.cfg"))
 
         ConfigParser.SafeConfigParser.__init__(self)
-        self.read(config_path)
+        self.readfp(config_fp)
+        self.load_default()
 
+        self.initialized = True
 
+    def load_default(self):
+        cfg = ConfigParser.SafeConfigParser()
+        cfg.readfp(DEFAULT_MD_CONFIG)
+
+        for section in cfg.sections():
+            options = dict(cfg.items(section)).keys()
+            
+            if not self.has_section(section):
+                self.add_section(section)
+
+            for option in options:
+                if not self.has_option(section, option):
+                    self.set(section, option, cfg.get(section, option))
