@@ -85,13 +85,10 @@ class ActivityHandlerTest(OAuthTestCase):
         self.assertEquals(1, activities[0]['owner']['id'])
 
     def test_delete(self):
-        request = {\
-            "access_token": self.access_token,
-            "activity_id": 1,
-        }
+        del_act_url = "/api/activity/?access_token=%s&activity_id=1" % \
+            (self.access_token)
 
-        rsp = self.client.delete('/api/activity/', request)
-        print rsp.content
+        rsp = self.client.delete(del_act_url)
 
         self.assertEquals(204, rsp.status_code)
 
