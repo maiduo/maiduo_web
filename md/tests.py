@@ -137,18 +137,6 @@ class UserHandlerTest(TestCase):
     def setUp(self):
         self.client = Client()
 
-    def test_upload_avatar(self):
-        user_data = {\
-            #"access_token": self.access_token,
-        }
-
-        rsp = self.client.put("/api/profile/?access_token=%s" % \
-                              self.access_token, user_data)
-        upload_token = simplejson.loads(rsp.content)
-        self.assertEquals(200, rsp.status_code)
-        self.assertTrue(upload_token.has_key("upload_token"))
-
-
     def test_create_user(self):
         user_data = {\
             "username": "13000000001",
@@ -165,6 +153,18 @@ class UserHandlerTest(TestCase):
         joined = activity.user.get(pk=user.id)
         self.assertNotEquals([], joined)
         self.assertEquals(True, user.is_active)
+
+class UserProfileHandlerTest(OAuthTestCase):
+    def test_upload_avatar(self):
+        user_data = {\
+            #"access_token": self.access_token,
+        }
+
+        rsp = self.client.put("/api/profile/?access_token=%s" % \
+                              self.access_token, user_data)
+        upload_token = simplejson.loads(rsp.content)
+        self.assertEquals(200, rsp.status_code)
+        self.assertTrue(upload_token.has_key("upload_token"))
 
 class MessageModelTest(TestCase):
     def test_save(self):

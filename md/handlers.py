@@ -36,7 +36,7 @@ qiniu.config.SECRET_KEY = cfg.get("storage", "secret_key")
 USER_FIELDS = ('user', ('id', 'first_name', 'date_joined', 'last_login'))
 
 class SMS(object):
-    def send(mobile, content):
+    def send(self, mobile, content):
         sms_url = "http://www.smsbao.com/sms?u=himaiduo&p=&m=%s&c=%s"
         fd = urlopen(sms_url % (mobile, content))
         responseText = fd.read(10)
@@ -47,13 +47,13 @@ class SMSFactory(object):
         return SMS()
 
 class MDHandler(BaseHandler):
-    def __init__(self, sms_factory = SMSFactory, *args, **kwargs)
+    def __init__(self, sms_factory = SMSFactory(), *args, **kwargs):
         self.sms = sms_factory.create()
         super(MDHandler, self).__init__(*args, **kwargs)
 
     def _storage_image_thumbnail(self, image, id, path, width):
         media_root = settings.MEDIA_ROOT
-        preview_path = join("user", path, "%d/%d_%d.jpg" % ids + [width]
+        preview_path = join("user", path, "%d/%d_%d.jpg" % ids + [width])
         preview_fd = file(os.path.join(media_root, preview_path), "w+")
 
         if w > width:
@@ -564,4 +564,3 @@ class ProfileHandler(MDHandler):
         return {\
             "upload_token": upload_token,
         }
->>>>>>> d7dba3d... 获得头像上传的token。
