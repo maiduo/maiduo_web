@@ -40,7 +40,7 @@ class OAuthTestCase(TestCase):
             'grant_type': 'password',
             'scope': '',
         }
-        rsp = self.client.post('/api/token/', request_token)
+        rsp = self.client.post('/api/authentication/', request_token)
         self.assertEquals(200, rsp.status_code)
 
         json = simplejson.loads(rsp.content)
