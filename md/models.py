@@ -21,9 +21,6 @@ class UserManager(BaseUserManager):
         if kwargs.has_key("username"):
             kwargs["mobile"] = kwargs.pop("username")
 
-        if kwargs["mobile"] == None:
-            bp()
-
         return super(UserManager, self).get(*args, **kwargs)
 
     def create_user(self, mobile, email=None, password=None, **extra_fields):
