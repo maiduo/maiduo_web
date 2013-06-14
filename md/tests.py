@@ -61,7 +61,7 @@ class ActivityManagerTest(TestCase):
         self.assertEquals("13000000000", activity.invitations[0].mobile)
 
     def test_i_am_coming(self):
-        user = User.objects.get(mobile="13000000000")
+        user = User.objects.get(mobile="13000000003")
         Activity.objects.i_am_coming(user)
         invitations = ActivityInvite.objects.filter(user=user)
         self.assertNotEquals(0, Activity.objects.filter(user=user).count())

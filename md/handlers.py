@@ -537,7 +537,6 @@ class UserHandler(MDHandler):
             user = User.objects.create_user(mobile=mobile,\
                                             password=password)
         except IntegrityError:
-            bp()
             user = User.objects.get(mobile=mobile)
             if user.is_active:
                 return rc.BAD_REQUEST
