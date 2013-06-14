@@ -21,6 +21,11 @@ import os
 import utils
 import mock
 
+import django
+if django.VERSION >= (1,5):
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
 class OAuthTestCase(TestCase):
     fixtures = ['users', 'activity.json', 'ios_notifications.json',\
                 'oauthost.json']
@@ -30,7 +35,7 @@ class OAuthTestCase(TestCase):
         self.client = Client()
         request_token = {\
             'client_id': '2dc5d858f1f441aa8e957b82ce248816',
-            'username': 'test',
+            'mobile': '13000000000',
             'password': '123123',
             'grant_type': 'password',
             'scope': '',
@@ -51,12 +56,12 @@ class ActivityManagerTest(TestCase):
             ['13000000000', 'test',], subject='Activity subject', owner=owner,\
             ip='127.0.0.1')
 
-        user1 = activity.user.get(username="test")
+        user1 = activity.user.get(mobile="1300000000")
         self.assertNotEquals(None, user1)
         self.assertEquals("13000000000", activity.invitations[0].username)
 
     def test_i_am_coming(self):
-        user = User.objects.get(username="13000000001")
+        user = User.objects.get(mobile="13000000000")
         Activity.objects.i_am_coming(user)
         invitations = ActivityInvite.objects.filter(user=user)
         self.assertNotEquals(0, Activity.objects.filter(user=user).count())
@@ -139,14 +144,28 @@ class UserHandlerTest(TestCase):
 
     def test_create_user(self):
         user_data = {\
-            "username": "13000000001",
+            "mobile": "13000000004",
             "password": "13000000000",
             "name": u"袁德俊",
         }
         rsp = self.client.post('/api/user/', user_data)
         self.assertEquals(200, rsp.status_code)
 
-        user = User.objects.get(username="13000000001")
+        user = User.objects.get(mobile="13000000004")
+        self.assertNotEquals(None, user)
+
+        self.assertEquals(True, user.is_active)
+
+    def test_create_invited_user(self):
+        user_data = {\
+            "mobile": "13000000003",
+            "password": "13000000000",
+            "name": u"袁德俊",
+        }
+        rsp = self.client.post('/api/user/', user_data)
+        self.assertEquals(200, rsp.status_code)
+
+        user = User.objects.get(mobile="13000000003")
         self.assertNotEquals(None, user)
 
         activity = Activity.objects.get(pk=1)

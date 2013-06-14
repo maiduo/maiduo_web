@@ -1,11 +1,11 @@
 [
   {
     "pk": 1,
-    "model": "auth.user", 
+    "model": "md.user", 
     "fields": {
-      "username": "test", 
-      "first_name": "", 
-      "last_name": "", 
+      "mobile": "13000000000",
+      "first_name": "Test", 
+      "last_name": "Wei", 
       "is_active": true, 
       "is_superuser": false, 
       "is_staff": false, 
@@ -19,9 +19,9 @@
   },
   {
     "pk": 2,
-    "model": "auth.user", 
+    "model": "md.user", 
     "fields": {
-      "username": "test2", 
+      "mobile": "13000000001",
       "first_name": "", 
       "last_name": "", 
       "is_active": true, 
@@ -37,9 +37,9 @@
   },
   {
     "pk": 3,
-    "model": "auth.user", 
+    "model": "md.user", 
     "fields": {
-      "username": "test3", 
+      "mobile": "13000000002",
       "first_name": "", 
       "last_name": "", 
       "is_active": true, 
@@ -55,9 +55,9 @@
   },
   {
     "pk": 4,
-    "model": "auth.user", 
+    "model": "md.user", 
     "fields": {
-      "username": "13000000001", 
+      "mobile": "13000000003",
       "first_name": "", 
       "last_name": "", 
       "is_active": false, 

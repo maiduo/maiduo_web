@@ -24,6 +24,7 @@ import PIL.Image
 import random
 import qiniu.config
 import qiniu.auth_token
+import surname
 
 cfg = utils.MDConfig()
 qiniu.config.ACCESS_KEY = cfg.get("storage", "access_key")
@@ -34,6 +35,11 @@ qiniu.config.SECRET_KEY = cfg.get("storage", "secret_key")
 # 换
 
 USER_FIELDS = ('user', ('id', 'first_name', 'date_joined', 'last_login'))
+
+import django
+if django.VERSION >= (1,5):
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
 
 class SMS(object):
     def send(self, mobile, content):
@@ -511,9 +517,8 @@ class ActivityInviteHandler(BaseHandler):
 class UserHandler(MDHandler):
     model = User
     allowed_method = ('POST', 'PUT',)
-    fields = ('id', 'username', 'first_name', 'date_joined', 'last_login',)
-    exclude = ('password', 'is_superuser', 'is_staff', 'email', 'is_active',
-               'last_login', 'date_joined', 'last_name', )
+    fields = ('id', 'mobile', 'name', 'date_joined', 'last_login',)
+    exclude = ('password', 'is_superuser', 'is_staff', 'email', 'is_active',)
     
     def update(self, request):
         if request.FILES.get("avatar", None):
@@ -522,20 +527,27 @@ class UserHandler(MDHandler):
         return rc.ALL_OK
 
     def create(self, request):
-        username = request.POST.get("username", None)
+        mobile = request.POST.get("mobile", None)
         password = request.POST.get("password", None)
         name = request.POST.get("name", None)
         try:
-            user = User.objects.create_user(username=username,\
+            user = User.objects.create_user(mobile=mobile,\
                                             password=password)
         except IntegrityError:
-            user = User.objects.get(username=username)
+            bp()
+            user = User.objects.get(mobile=mobile)
             if user.is_active:
                 return rc.BAD_REQUEST
 
-            # Activity.objects.i_am_coming(user)
+            Activity.objects.i_am_coming(user)
+
         user.is_active = True
-        user.first_name = name
+
+        # FIXME 只能分开单姓和复姓，3个字及其以上就无能为力了
+        last_name_idx = surname.is_surname(name[2:]) and 2 or 1
+        user.last_name = name[:last_name_idx]
+        user.first_name = name[last_name_idx:]
+
         user.set_password(password)
         user.save()
 
