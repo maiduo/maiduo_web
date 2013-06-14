@@ -58,7 +58,7 @@ class ActivityManagerTest(TestCase):
 
         user1 = activity.user.get(mobile="1300000000")
         self.assertNotEquals(None, user1)
-        self.assertEquals("13000000000", activity.invitations[0].username)
+        self.assertEquals("13000000000", activity.invitations[0].mobile)
 
     def test_i_am_coming(self):
         user = User.objects.get(mobile="13000000000")
@@ -117,7 +117,7 @@ class ActivityInviteHandlerTest(OAuthTestCase):
     def test_create_has_user(self):
         request_data = {
             "activity_id": 1,
-            "username": "13000000001",
+            "mobile": "13000000001",
             "name": "13000000001",
             "access_token": self.access_token
         }
@@ -128,8 +128,8 @@ class ActivityInviteHandlerTest(OAuthTestCase):
         rsp = self.client.post('/api/activity/invite/', request_data)
         self.assertEquals(200, rsp.status_code)
 
-        user = User.objects.get(username="13000000001")
-        user_test = User.objects.get(username="test")
+        user = User.objects.get(mobile="13000000001")
+        user_test = User.objects.get(mobile="13000000000")
         activity = Activity.objects.get(pk=1)
 
         self.assertEquals(1, activity.user.filter(id=user.id).count())
@@ -204,7 +204,7 @@ class MessageHandlerTest(OAuthTestCase):
         handlers.utils.get_client_ip.return_value = "127.0.0.1"
         hd = handlers.MessageHandler()
         request = mock.MagicMock()
-        request.user = User.objects.get(username='test')
+        request.user = User.objects.get(mobile='test')
         request.POST = {"activity_id": 1, "body": "Message."}
 
         def mock_and_assert_send_notification(devices, service, notification):
@@ -245,7 +245,7 @@ class MessageHandlerTest(OAuthTestCase):
         handlers.utils.get_client_ip.return_value = "127.0.0.1"
         hd = handlers.MessageHandler()
         request = mock.MagicMock()
-        request.user = User.objects.get(username='test')
+        request.user = User.objects.get(mobile='test')
         request.PUT = {"message_id": 1}
 
         def mock_and_assert_send_notification(devices, service, notification):
@@ -319,7 +319,7 @@ class AuthenticationHandlerTest(TestCase):
     def test_bind_user_and_device_token_not_exists_token(self):
         device_token = "<token>"
         auth = handlers.AuthenticationHandler()
-        user = User.objects.get(username="test")
+        user = User.objects.get(mobile="13000000000")
         auth.bind_user_and_device_token(user, device_token, "dev")
 
         devices = Device.objects.filter(users=user, token=device_token,\
@@ -329,7 +329,7 @@ class AuthenticationHandlerTest(TestCase):
     def test_bind_user_and_device_token(self):
         device_token = "a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c27"
         auth = handlers.AuthenticationHandler()
-        user = User.objects.get(username="test")
+        user = User.objects.get(mobile="13000000000")
         auth.bind_user_and_device_token(user, device_token, "dev")
 
         devices = Device.objects.filter(users=user, token=device_token,\
@@ -339,7 +339,7 @@ class AuthenticationHandlerTest(TestCase):
     def test_bind_user_and_device_token_but_token_exist(self):
         device_token = "a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c30"
         auth = handlers.AuthenticationHandler()
-        user = User.objects.get(username="test")
+        user = User.objects.get(mobile="13000000000")
         auth.bind_user_and_device_token(user, device_token, "dev")
 
         devices = Device.objects.filter(users=user, token=device_token,\
@@ -351,7 +351,7 @@ class AuthenticationHandlerTest(TestCase):
         device_token = 'a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c27'
         request_token = {\
             'client_id': '2dc5d858f1f441aa8e957b82ce248816',
-            'username': 'test',
+            'mobile': '13000000000',
             'password': '123123',
             'grant_type': 'password',
             'scope': '',
@@ -360,7 +360,7 @@ class AuthenticationHandlerTest(TestCase):
         rsp = self.client.post('/api/authentication/', request_token)
 
         self.assertEquals(200, rsp.status_code)
-        user = User.objects.get(username="test")
+        user = User.objects.get(mobile="13000000000")
         devices = Device.objects.filter(users=user, token=device_token,\
                                         service__name="dev").count()
         self.assertEquals(1, devices)
@@ -369,7 +369,7 @@ class AuthenticationHandlerTest(TestCase):
     def test_authenticate_empty_token(self):
         request_token = {\
             'client_id': '2dc5d858f1f441aa8e957b82ce248816',
-            'username': 'test',
+            'mobile': '13000000000',
             'password': '123123',
             'grant_type': 'password',
             'scope': '',
@@ -377,7 +377,7 @@ class AuthenticationHandlerTest(TestCase):
         }
         rsp = self.client.post('/api/authentication/', request_token)
         self.assertEquals(200, rsp.status_code)
-        user = User.objects.get(username="test")
+        user = User.objects.get(mobile="13000000000")
         devices = Device.objects.filter(users=user, token="",\
                                         service__name="dev").count()
         self.assertEquals(0, devices)
@@ -445,7 +445,7 @@ class ChatHandlerTest(OAuthTestCase):
         handlers.utils.get_client_ip.return_value = "127.0.0.1"
         hd = handlers.ChatHandler()
         request = mock.MagicMock()
-        request.user = User.objects.get(username='test')
+        request.user = User.objects.get(mobile='test')
         request.POST = {"activity_id": 1, "text": "First chat message."}
 
         def mock_and_assert_send_notification(devices, service, notification):
