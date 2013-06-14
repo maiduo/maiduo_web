@@ -53,7 +53,7 @@ class ActivityManagerTest(TestCase):
     def _test_create_with_invitations(self):
         owner = User.objects.get(pk=1)
         activity = Activity.objects.create_with_invitations(
-            ['13000000000', 'test',], subject='Activity subject', owner=owner,\
+            ['13000000000', '13000000000',], subject='Activity subject', owner=owner,\
             ip='127.0.0.1')
 
         user1 = activity.user.get(mobile="1300000000")
@@ -204,7 +204,7 @@ class MessageHandlerTest(OAuthTestCase):
         handlers.utils.get_client_ip.return_value = "127.0.0.1"
         hd = handlers.MessageHandler()
         request = mock.MagicMock()
-        request.user = User.objects.get(mobile='test')
+        request.user = User.objects.get(mobile='13000000000')
         request.POST = {"activity_id": 1, "body": "Message."}
 
         def mock_and_assert_send_notification(devices, service, notification):
@@ -245,7 +245,7 @@ class MessageHandlerTest(OAuthTestCase):
         handlers.utils.get_client_ip.return_value = "127.0.0.1"
         hd = handlers.MessageHandler()
         request = mock.MagicMock()
-        request.user = User.objects.get(mobile='test')
+        request.user = User.objects.get(mobile='13000000000')
         request.PUT = {"message_id": 1}
 
         def mock_and_assert_send_notification(devices, service, notification):
@@ -445,7 +445,7 @@ class ChatHandlerTest(OAuthTestCase):
         handlers.utils.get_client_ip.return_value = "127.0.0.1"
         hd = handlers.ChatHandler()
         request = mock.MagicMock()
-        request.user = User.objects.get(mobile='test')
+        request.user = User.objects.get(mobile='13000000000')
         request.POST = {"activity_id": 1, "text": "First chat message."}
 
         def mock_and_assert_send_notification(devices, service, notification):
