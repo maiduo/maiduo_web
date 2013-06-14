@@ -329,19 +329,20 @@ class AuthenticationHandlerTest(TestCase):
 
     @override_settings(DEBUG=True)
     def test_authenticate(self):
+        device_token = 'a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c27'
         request_token = {\
             'client_id': '2dc5d858f1f441aa8e957b82ce248816',
             'username': 'test',
             'password': '123123',
             'grant_type': 'password',
             'scope': '',
-            'device_token': 'a4faf00f4654246b9fd7e78ae29a49b321673892ae81721b8e74ad9d285b3c27',
+            'device_token': device_token,
         }
         rsp = self.client.post('/api/authentication/', request_token)
 
         self.assertEquals(200, rsp.status_code)
         user = User.objects.get(username="test")
-        devices = Device.objects.filter(users=user, token="<token>",\
+        devices = Device.objects.filter(users=user, token=device_token,\
                                         service__name="dev").count()
         self.assertEquals(1, devices)
 

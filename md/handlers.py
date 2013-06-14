@@ -387,13 +387,7 @@ class AuthenticationHandler(BaseHandler):
             "service__name": service_name
         }
         not_bind = push_models.Device.objects.filter(**query).count() == 0
-        empty_token = '' == device_token
-
-        # kick_user_with_device
-        devices = push_models.Device\
-            .objects\
-            .filter(token=device_token, service__name=service_name)\
-            .delete()
+        empty_token = len(device_token) == 0
 
         if not_bind and not empty_token:
             service = push_models.APNService.objects.get(name=service_name)
@@ -401,6 +395,7 @@ class AuthenticationHandler(BaseHandler):
                 "token": device_token,
                 "service": service,
             }
+
             try:
                 device = push_models.Device.objects.get(**kw_device)
             except push_models.Device.DoesNotExist:
