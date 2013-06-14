@@ -1,3 +1,21 @@
 [submodule "vendor/qiniu"]
 	path = vendor/qiniu
 	url = https://github.com/qiniu/python-sdk
+[submodule "cookbooks/apt"]
+	path = cookbooks/apt
+	url = https://github.com/opscode-cookbooks/apt
+[submodule "cookbooks/nginx"]
+	path = cookbooks/nginx
+	url = https://github.com/opscode-cookbooks/nginx
+[submodule "cookbooks/build-essential"]
+	path = cookbooks/build-essential
+	url = https://github.com/opscode-cookbooks/build-essential
+[submodule "cookbooks/python"]
+	path = cookbooks/python
+	url = https://github.com/opscode-cookbooks/python
+[submodule "cookbooks/gunicorn"]
+	path = cookbooks/gunicorn
+	url = https://github.com/opscode-cookbooks/gunicorn
+[submodule "cookbooks/yum"]
+	path = cookbooks/yum
+	url = https://github.com/opscode-cookbooks/yum
