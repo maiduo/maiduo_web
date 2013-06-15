@@ -45,7 +45,7 @@ def scan_default_location(filename):
 DEFAULT_MD_CONFIG = StringIO("""[storage]
 access_key =
 secret_key =
-bucket = maiduo-test
+bucket = maiduo-dev
 
 [common]
 database = sqlite
@@ -72,7 +72,11 @@ class MDConfig(ConfigParser.SafeConfigParser, Singleton):
             return
 
         if not config_fp:
-            config_fp = file(scan_default_location("md.cfg"))
+            try:
+                config_fp = file(scan_default_location("md.cfg"))
+            except NotFound:
+                # FIXME logging.info中输出 NotFound的描述
+                pass
 
         ConfigParser.SafeConfigParser.__init__(self)
         self.readfp(config_fp)
