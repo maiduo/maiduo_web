@@ -1,3 +1,13 @@
-[submodule "chef-repo"]
-	path = chef-repo
-	url = http://github.com/maiduo/maiduo_chef.git
+
+[submodule "chef-repo/cookbooks/apt"]
+	path = chef-repo/cookbooks/apt
+	url = https://github.com/opscode-cookbooks/apt.git
+[submodule "chef-repo/cookbooks/yum"]
+	path = chef-repo/cookbooks/yum
+	url = https://github.com/opscode-cookbooks/yum.git
+[submodule "chef-repo/cookbooks/build-essential"]
+	path = chef-repo/cookbooks/build-essential
+	url = https://github.com/opscode-cookbooks/build-essential.git
+[submodule "chef-repo/cookbooks/python"]
+	path = chef-repo/cookbooks/python
+	url = https://github.com/opscode-cookbooks/python.git
