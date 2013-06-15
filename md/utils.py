@@ -76,11 +76,11 @@ class MDConfig(ConfigParser.SafeConfigParser, Singleton):
                 config_fp = file(scan_default_location("md.cfg"))
             except NotFound:
                 # FIXME logging.info中输出 NotFound的描述
-                pass
+                config_fp = DEFAULT_MD_CONFIG
 
         ConfigParser.SafeConfigParser.__init__(self)
         self.readfp(config_fp)
-        self.load_default()
+        # self.load_default()
 
         self.initialized = True
 
