@@ -84,6 +84,19 @@ class MDConfig(ConfigParser.SafeConfigParser, Singleton):
 
         self.initialized = True
 
+    def get(self, section, option, default = None, **kwargs):
+        has_option = self.has_option(section, option)
+
+        if not has_option and default:
+            return default
+
+        try:
+            return ConfigParser.SafeConfigParser.get(self, section, option, \
+                                                     **kwargs)
+        except ConfigParser.NoSectionError:
+            return default
+        # return super(self, MDConfig).get(section, option, **kwargs)
+
     def load_default(self):
         cfg = ConfigParser.SafeConfigParser()
         cfg.readfp(DEFAULT_MD_CONFIG)
