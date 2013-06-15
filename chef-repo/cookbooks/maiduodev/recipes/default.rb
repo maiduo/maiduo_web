@@ -7,7 +7,6 @@
 # All rights reserved - Do Not Redistribute
 #
 
-=begin
 include_recipe "apt"
 file "/etc/apt/sources.list" do
   action :delete
@@ -20,7 +19,6 @@ apt_repository "netease" do
 end
 
 include_recipe "build-essential"
-=end
 
 package "git"
 package "python-mysqldb" do
@@ -34,8 +32,20 @@ python_virtualenv "/data/.virtualenvs/maiduodev" do
   action :create
   options "--distribute"
 end
+
 python_pip "pip" do
   virtualenv "/data/.virtualenvs/maiduodev"
   # options "--distribute"
   action :install
+end
+
+git "/data/maiduo/" do
+  repository "git://github.com/maiduo/maiduo_web.git"
+  action :sync
+end
+
+execute "pip install -r requirements.txt" do
+  command "source /data/.virtualenvs/maiduodev/bin/activate;"\
+          "pip install -r requirements.txt"
+  cwd "/data/maiduo/"
 end
