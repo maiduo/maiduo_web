@@ -50,6 +50,18 @@ if MYSQL_HOST:
         }
     }
 
+APPS = []
+ENVIRONMENT = mdconf.get("command", "environment", "dev")
+if "production" == ENVIRONMENT:
+    if 'posix' == os.name:
+        APPS = [
+            'gunicorn',
+        ]
+elif "dev" == ENVIRONMENT:
+    APPS = [
+        'django_extensions'
+    ]
+
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
@@ -154,12 +166,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (\
     'django.core.context_processors.request',
 )
 
-if 'posix' == os.name:
-    APPS = (
-        'gunicorn',
-    )
-else:
-    APPS = ()
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -174,7 +180,7 @@ INSTALLED_APPS = (
     'ios_notifications',
     'oauthost',
     'md',
-) + APPS
+) + tuple(APPS)
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
