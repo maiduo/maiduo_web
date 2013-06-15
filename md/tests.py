@@ -472,3 +472,11 @@ class MDConfigTest(TestCase):
         self.assertTrue(self.cfg.has_option('common', 'enviroment'))
         self.assertTrue(self.cfg.has_option('sqlite', 'name'))
 
+    def test_get_default(self):
+        """get方法添加default参数
+        """
+
+        self.assertEquals(None, self.cfg.get("missing", "missing", None))
+        self.assertEquals("missing", self.cfg.get("missing", "missing", \
+                                                  "missing"))
+
