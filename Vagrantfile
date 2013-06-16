@@ -43,6 +43,10 @@ Vagrant.configure("2") do |config|
   # View the documentation for the provider you're using for more
   # information on available options.
 
+  config.vm.provision :shell,
+                      :inline => "sudo gem install chef --version "\
+                                 "11.4.2 --no-rdoc --no-ri --conservative -V"
+
   # Enable provisioning with chef solo, specifying a cookbooks path, roles
   # path, and data_bags path (all relative to this Vagrantfile), and adding
   # some recipes and/or roles.
@@ -54,7 +58,7 @@ Vagrant.configure("2") do |config|
   #   chef.add_recipe "mysql"
   #   chef.add_role "web"
     chef.add_recipe "maiduodev"
-    chef.log_level = :debug
+  #   chef.log_level = :debug
   #
   #   # You may also specify custom JSON attributes:
   #   chef.json = { :mysql_password => "foo" }
