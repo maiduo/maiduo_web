@@ -26,3 +26,6 @@
 [submodule "chef-repo/cookbooks/runit"]
 	path = chef-repo/cookbooks/runit
 	url = https://github.com/opscode-cookbooks/runit.git
+[submodule "vendor/qiniu"]
+	path = vendor/qiniu
+	url = https://github.com/qiniu/python-sdk
