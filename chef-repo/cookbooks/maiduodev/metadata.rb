@@ -9,3 +9,5 @@ version          '0.1.0'
 depends "apt"
 depends "build-essential"
 depends "python"
+depends "supervisor"
+depends "nginx"
