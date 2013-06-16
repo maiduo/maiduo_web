@@ -1,3 +1,28 @@
-[submodule "chef-repo"]
-	path = chef-repo
-	url = http://github.com/maiduo/maiduo_chef.git
+
+[submodule "chef-repo/cookbooks/apt"]
+	path = chef-repo/cookbooks/apt
+	url = https://github.com/opscode-cookbooks/apt.git
+[submodule "chef-repo/cookbooks/yum"]
+	path = chef-repo/cookbooks/yum
+	url = https://github.com/opscode-cookbooks/yum.git
+[submodule "chef-repo/cookbooks/build-essential"]
+	path = chef-repo/cookbooks/build-essential
+	url = https://github.com/opscode-cookbooks/build-essential.git
+[submodule "chef-repo/cookbooks/python"]
+	path = chef-repo/cookbooks/python
+	url = https://github.com/opscode-cookbooks/python.git
+[submodule "chef-repo/cookbooks/gunicorn"]
+	path = chef-repo/cookbooks/gunicorn
+	url = https://github.com/opscode-cookbooks/gunicorn.git
+[submodule "chef-repo/cookbooks/supervisor"]
+	path = chef-repo/cookbooks/supervisor
+	url = https://github.com/opscode-cookbooks/supervisor.git
+[submodule "chef-repo/cookbooks/nginx"]
+	path = chef-repo/cookbooks/nginx
+	url = https://github.com/opscode-cookbooks/nginx.git
+[submodule "chef-repo/cookbooks/ohai"]
+	path = chef-repo/cookbooks/ohai
+	url = https://github.com/opscode-cookbooks/ohai.git
+[submodule "chef-repo/cookbooks/runit"]
+	path = chef-repo/cookbooks/runit
+	url = https://github.com/opscode-cookbooks/runit.git
