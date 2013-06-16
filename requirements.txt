@@ -4,3 +4,4 @@ south
 pillow
 -e git+https://github.com/imcj/django-piston#egg=django-piston
 -e git+https://github.com/idlesign/django-oauthost@1a00f09db9a6782b2fc18270b1a21599e9506d42#egg=django-oauthost
+gunicorn
