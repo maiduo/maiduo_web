@@ -59,7 +59,8 @@ if "production" == ENVIRONMENT:
         ]
 elif "dev" == ENVIRONMENT:
     APPS = [
-        'django_extensions'
+        'django_extensions',
+        'qiniu_stub',
     ]
 
 # Local time zone for this installation. Choices can be found here:
