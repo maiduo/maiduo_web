@@ -5,4 +5,5 @@ src/
 media/user/
 vendor
 .vagrant
+.vagrant*
 chef-repo/chef-solo

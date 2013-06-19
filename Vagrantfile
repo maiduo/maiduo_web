@@ -44,8 +44,8 @@ Vagrant.configure("2") do |config|
   # information on available options.
 
   config.vm.provision :shell,
-                      :inline => "sudo gem install chef --version "\
-                                 "11.4.2 --no-rdoc --no-ri --conservative -V"
+                      :inline => "wget -qO- https://gist.github.com/imcj/"\
+                                 "5794586/raw/init.sh|sudo python"
 
   # Enable provisioning with chef solo, specifying a cookbooks path, roles
   # path, and data_bags path (all relative to this Vagrantfile), and adding

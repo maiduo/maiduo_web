@@ -26,7 +26,7 @@ package "python-mysqldb" do
 end 
 
 include_recipe "python"
-python_pip "virtualenv"
+python_pip "get-mirror"
 
 python_virtualenv "/data/.virtualenvs/maiduodev" do
   action :create
@@ -35,44 +35,35 @@ end
 
 python_pip "pip" do
   virtualenv "/data/.virtualenvs/maiduodev"
-  # options "--distribute"
   action :install
 end
 
 git "/data/maiduo/" do
   repository "git://github.com/maiduo/maiduo_web.git"
   action :sync
+  enable_submodules true
 end
 
+ruby_block "load-get-mirror" do
+  block do
+    # node[:maiduodev] = {}
+    node.default[:maiduodev][:mirror_pypi] = `get-mirror pypi`
+  end
+  action :create
+end
 execute "pip install -r requirements.txt" do
-  command "source /data/.virtualenvs/maiduodev/bin/activate;"\
-          "pip install -r requirements.txt"
+  command "/data/.virtualenvs/maiduodev/bin/pip install -r requirements.txt"
   cwd "/data/maiduo/"
 end
 execute "pip install -r dev_requirements.txt" do
-  command "source /data/.virtualenvs/maiduodev/bin/activate;"\
-          "pip install -r requirements.txt"
+  command "/data/.virtualenvs/maiduodev/bin/pip install -r "\
+          "dev_requirements.txt"
   cwd "/data/maiduo/"
 end
 
-execute "setup maiduo app" do
-  command "source /data/.virtualenvs/maiduodev/bin/activate;"\
-          "python manage.py syncdb --noinput;"\
-          "python manage.py migrate --all;"\
-          "python manage.py createsuperuser --username admin --email "\
-          "admin@admin.com --noinput;"
-          "python manage.py passwd2 admin --password admin;"\
-          "python manage.py collectstatic --noinput;"
-  cwd "/data/maiduo/"
-  not_if { ::File.exists?("/data/maiduo/dev.sqlite3") }
-end
+include_recipe "maiduodev::sync"
 
-directory "/data/maiduo/static/"
 
-execute "move static file" do
-  command "mv /data/maiduo/admin /data/maiduo/static/"
-  not_if { ::Dir.exists?("/data/maiduo/admin") }
-end
 
 #include_recipe 'gunicorn'
 #include_recipe 'maiduodev::gunicorn'
@@ -91,9 +82,11 @@ directory "/data/supervisor/log/" do
   action :create
 end
 
-node.default['supervisor']['dir'] = '/data/supervisor/'
+node.default['supervisor']['dir'] = '/data/supervisor'
 node.default['supervisor']['log_dir'] = '/data/supervisor/log/'
 node.default['supervisor']['logolevel'] = 'debug'
+include_recipe "supervisor"
+
 supervisor_service "maiduo" do
   action "enable"
   autostart true
@@ -104,7 +97,6 @@ supervisor_service "maiduo" do
   command "/data/.virtualenvs/maiduodev/bin/"\
           "gunicorn mdapp.wsgi:application -c /data/gunicorn_maiduo.py"
 end
-include_recipe "supervisor"
 
 include_recipe "nginx"
 cookbook_file "#{node['nginx']['dir']}/sites-available/default" do
