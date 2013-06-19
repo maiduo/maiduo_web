@@ -1,7 +1,9 @@
 # Django settings for mdapp project.
 import os
+from os.path import join
 import sys
 from md.utils import MDConfig
+from pdb import set_trace as bp
 
 mdconf = MDConfig()
 
@@ -53,11 +55,17 @@ if MYSQL_HOST:
 APPS = []
 ENVIRONMENT = mdconf.get("command", "environment", "dev")
 if "production" == ENVIRONMENT:
+    try:
+        MEDIA_ROOT = mdconf.get("setting", "media_root")
+    except Exception:
+        MEDIA_ROOT = os.path.join(WEB_ROOT, "media")
+
     if 'posix' == os.name:
         APPS = [
             'gunicorn',
         ]
 elif "dev" == ENVIRONMENT:
+    MEDIA_ROOT = join(WEB_ROOT, "media")
     APPS = [
         'django_extensions',
         'qiniu_stub',
@@ -91,10 +99,7 @@ USE_TZ = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-try:
-    MEDIA_ROOT = mdconf.get("setting", "media_root")
-except Exception:
-    MEDIA_ROOT = os.path.join(WEB_ROOT, "media")
+# MEDIA_ROOT
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
