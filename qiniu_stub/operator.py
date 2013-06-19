@@ -1,3 +1,5 @@
+from os.path import join, basename, dirname, exists, splitext
+
 class ImageThumbnailCenterMode:
     pass
 
@@ -58,5 +60,24 @@ class ImageThumbnailOperator(object):
 
         setattr(self, attr, int(size[1]))
 
-    def process(self):
+    @property
+    def cache_id(self):
+        if self.mode == ImageThumbnailNormalMode:
+            number_mode = 2
+        elif self.mode == ImageThumbnailCenterMode:
+            number_mode = 1
+
+        return "%d_%s_%s_%s" % (number_mode, self.width, self.height,\
+                                self.quality)
+
+    def cache_key(self, key):
+        key_dirname = dirname(key)
+        filename, fileext = splitext(basename(key))
+        if self.format:
+            fileext = self.format
+
+        return join(key_dirname,\
+                    "%s_%s.%s" % (filename, self.cache_id, fileext))
+
+    def process(self, file, document_root):
         pass
