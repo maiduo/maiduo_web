@@ -6,6 +6,7 @@ Replace this with more appropriate tests for your application.
 """
 
 import os
+import token
 from os.path import dirname, abspath, join, exists
 from django.test import TestCase
 from django.test.client import Client
@@ -14,6 +15,7 @@ from django.conf import settings
 from qiniu_stub.operator import ImageThumbnailOperator,\
                                 ImageThumbnailCenterMode,\
                                 ImageThumbnailNormalMode
+from pdb import set_trace as bp
 from StringIO import StringIO
 
 class ImageThumbnailOperatorTest(TestCase):
@@ -48,9 +50,11 @@ class QiniuStubTest(TestCase):
         import shutil
         dest = join(settings.MEDIA_ROOT, "qiniu/jpg/13/6/19")
         if not exists(dest):
-            os.makedirs()
-        shutil.copyfile(join(FIXTURE_DIR, "10x10.jpg"),\
-                        join(settings.MEDIA_ROOT, "qiniu/jpg/13/6/19/10x10.jpg"))
+            os.makedirs(dest)
+
+        dest_file = join(settings.MEDIA_ROOT, "qiniu/jpg/13/6/19/10x10.jpg")
+        if not exists(dest_file):
+            shutil.copyfile(join(FIXTURE_DIR, "10x10.jpg"), dest_file)
 
     def test_upload(self):
         upload_url = reverse("qiniu_stub_upload")
@@ -73,4 +77,23 @@ class QiniuStubTest(TestCase):
         rsp = self.client.get(download_url)
         print rsp.content
         assert 200 == rsp.status_code
+
+class PascalToCamelCaseTest(TestCase):
+    def test_pascal_to_camel_case(self):
+        assert "yourName" == token.pascal_to_camel_case("your_name")
+        assert "name" == token.pascal_to_camel_case("name")
+        assert "youAreWelcome" == token.pascal_to_camel_case("you_are_welcome")
+
+class PutTokenTest(TestCase):
+    def setUp(self):
+        self.token = token.Token("11111", "11111")
+        self.put_token = token.PutToken(self.token, 'maiduo', callback_url="",\
+                                        callback_body_type="", customer="",\
+                                        async_ops="", escape="", detect_mine="")
+
+    def test_dict(self):
+        t = self.put_token.dict
+        assert "maiduo" == t['scope']
+        for field in token.PutToken.JSON_FIELDS_MAP:
+            assert True == t.has_key(field)
 
