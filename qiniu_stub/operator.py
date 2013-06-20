@@ -1,4 +1,5 @@
 from os.path import join, basename, dirname, exists, splitext
+from pdb import set_trace as bp
 
 class ImageThumbnailCenterMode:
     pass
@@ -77,7 +78,7 @@ class ImageThumbnailOperator(object):
             fileext = self.format
 
         return join(key_dirname,\
-                    "%s_%s.%s" % (filename, self.cache_id, fileext))
+                    "%s_%s%s" % (filename, self.cache_id, fileext))
 
     def process(self, file, document_root):
         pass

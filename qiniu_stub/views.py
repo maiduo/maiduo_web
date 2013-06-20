@@ -1,24 +1,35 @@
+#! -*- encoding:utf-8 -*-
+
 import os
+import token
+from qiniu_stub.models import Credential, Key
 from django.http import HttpResponse
 from django.conf import settings
 from django.views.static import serve
 from os.path import join, basename, dirname, exists, splitext
 from operator import ImageThumbnailOperator
+from models import ServerPutToken
 from pdb import set_trace as bp
 
 QINIU_MEDIA_ROOT = join(settings.MEDIA_ROOT, "qiniu")
 
+
 def upload(request):
     key = request.POST.get("key", "")
-    f = request.FILES.get('file')
-    upload_dirname = dirname(join(QINIU_MEDIA_ROOT, key))
-    upload_basename = basename(key)
+    try:
+        server_token = ServerPutToken(request.POST.get("token"))
+    except token.SignAuthenticateFault, e:
+        print e
 
-    
+    bucket = server_token.put_token.scope.bucket
+    f = request.FILES.get('file')
+    upload_dirname = dirname(join(QINIU_MEDIA_ROOT, bucket, key))
+
     if not exists(upload_dirname):
         os.makedirs(upload_dirname)
     
-    obj = open(join(QINIU_MEDIA_ROOT, key), "w")
+
+    obj = open(join(QINIU_MEDIA_ROOT, bucket, key), "w")
     for chunk in f.chunks():
         obj.write(chunk)
     obj.close()
@@ -36,4 +47,4 @@ def download(request, bucket, path):
 
         key = operator.cache_key(path)
 
-    return serve(request, key, QINIU_MEDIA_ROOT)
+    return serve(request, key, join(QINIU_MEDIA_ROOT, bucket))
