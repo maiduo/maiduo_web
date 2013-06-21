@@ -1,5 +1,9 @@
-from os.path import join, basename, dirname, exists, splitext
+# -*- encoding:utf-8 -*-
+
+from PIL import Image
 from pdb import set_trace as bp
+from os.path import join, basename, dirname, exists, splitext
+
 
 class ImageThumbnailCenterMode:
     pass
@@ -15,7 +19,6 @@ class ImageThumbnailMode:
             return ImageThumbnailCenterMode
         elif 2 == mode:
             return ImageThumbnailNormalMode
-
 
 class ImageThumbnailOperator(object):
     _map_methods = {\
@@ -80,5 +83,41 @@ class ImageThumbnailOperator(object):
         return join(key_dirname,\
                     "%s_%s%s" % (filename, self.cache_id, fileext))
 
+
+    def calculate(self, size):
+        width = float(size[0])
+        height = float(size[1])
+        except_width = self.width
+        except_height = self.height
+
+        rate = except_width / width
+
+        zoomed_width = width * rate
+        zoomed_height = height * rate
+
+        except_too_long = zoomed_height < except_height
+        if except_too_long:
+            rate = except_height / height
+
+        zoomed_height = height * rate
+        zoomed_width = width * rate
+
+        if not except_width:
+            except_width = width * rate
+        elif not except_height:
+            except_height = height * rate
+
+        if self.mode == ImageThumbnailCenterMode:
+            x = (zoomed_width - except_width) / 2
+            y = (zoomed_height - except_height) / 2
+        else:
+            x = y = 0
+
+        return (x, y, except_width, except_height, rate)
+
+
     def process(self, file, document_root):
-        pass
+        img = Image.open(join(document_root, file))
+
+        rect = caculate(img.size())
+

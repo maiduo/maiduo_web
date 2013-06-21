@@ -43,7 +43,7 @@ def download(request, bucket, path):
         key = path
     else:
         operator = ImageThumbnailOperator(query_string)
-        operator.process(path, QINIU_MEDIA_ROOT)
+        operator.process(path, join(QINIU_MEDIA_ROOT, bucket))
 
         key = operator.cache_key(path)
 

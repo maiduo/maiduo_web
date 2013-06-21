@@ -42,6 +42,51 @@ class ImageThumbnailOperatorTest(TestCase):
         assert 0 == operator.width
         assert 200 == operator.height
 
+    def test_calculate_center(self):
+        operator = ImageThumbnailOperator("imageView/1/w/50/h/50")
+        rect = operator.calculate((100, 110))
+        assert (0, 2.5, 50, 50, 0.5) == rect
+        rect = operator.calculate((110, 100))
+        assert (2.5, 0, 50, 50, 0.5) == rect
+        operator = ImageThumbnailOperator("imageView/1/w/40/h/50")
+        rect = operator.calculate((120, 100))
+        assert (10, 0, 40, 50, 0.5) == rect
+
+    def test_calculate_normal(self):
+        operator = ImageThumbnailOperator("imageView/2/w/50/h/50")
+        rect = operator.calculate((100, 100))
+        assert (0, 0, 50, 50, 0.5) == rect
+
+        operator = ImageThumbnailOperator("imageView/2/w/50/h/100")
+        rect = operator.calculate((100, 100))
+        assert (0, 0, 50, 100, 1) == rect
+
+
+    def test_calculate_normal_only_width(self):
+        operator = ImageThumbnailOperator("imageView/2/w/50")
+        rect = operator.calculate((100, 100))
+        assert (0, 0, 50, 50, 0.5) == rect
+
+    def test_calculate_normal_only_height(self):
+        operator = ImageThumbnailOperator("imageView/2/h/50")
+        rect = operator.calculate((100, 100))
+        assert (0, 0, 50, 50, 0.5) == rect
+
+    def test_calculate_normal_zoomout(self):
+        operator = ImageThumbnailOperator("imageView/2/h/200")
+        rect = operator.calculate((100, 100))
+        assert (0, 0, 200, 200, 2) == rect
+
+    def test_calculate_normal_width_zoomout(self):
+        operator = ImageThumbnailOperator("imageView/2/w/200/h/100")
+        rect = operator.calculate((100, 100))
+        assert (0, 0, 200, 100, 2) == rect
+
+    def test_calculate_normal_height_zoomout(self):
+        operator = ImageThumbnailOperator("imageView/2/w/100/h/200")
+        rect = operator.calculate((100, 100))
+        assert (0, 0, 100, 200, 2) == rect
+
 FIXTURE_DIR = abspath(join(dirname(__file__), "fixtures"))
 
 class QiniuStubViewTest(TestCase):
