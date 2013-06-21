@@ -12,6 +12,7 @@ import os
 import token
 import shutil
 import tempfile
+from base64 import urlsafe_b64encode
 from models import ServerPutToken
 from os.path import dirname, basename, abspath, join, exists
 from django.test import TestCase
@@ -99,6 +100,8 @@ class ImageThumbnailOperatorTest(TestCase):
     def test_process(self):
         destination = tempfile.NamedTemporaryFile()
         destination_path = destination.name
+        destination_filename = basename(destination_path)
+        destination_dir  = dirname(destination_path)
         source_file = join(FIXTURE_DIR, "100x100.jpg")
         shutil.copyfile(source_file, destination_path)
         
@@ -107,7 +110,8 @@ class ImageThumbnailOperatorTest(TestCase):
 
         # 改进
         # 在内存中完成，不做真实的文件IO读写操作
-        img = Image.open(destination_path)
+        img = Image.open(join(destination_dir,\
+                              operator.cache_key(destination_filename)))
         assert (50, 50) == img.size
 
 class QiniuStubViewTest(TestCase):
@@ -149,7 +153,6 @@ class QiniuStubViewTest(TestCase):
             reverse("qiniu_stub_download", args = (self.bucket, key,)), op)
 
         rsp = self.client.get(download_url)
-        print rsp.content
         assert 200 == rsp.status_code
 
 class PascalToCamelCaseTest(TestCase):
@@ -194,7 +197,7 @@ class RequestPutTokenTest(TestCase):
         t = token\
                 .RequestPutToken\
                 .from_json(self.put_token.access, self.put_token.secret,\
-                           self.put_token.json)
+                           urlsafe_b64encode(self.put_token.json))
 
         assert "maiduo" == t.scope.bucket
         assert "" == t.scope.key

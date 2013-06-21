@@ -167,5 +167,5 @@ class ImageThumbnailOperator(object):
             except:
                 format = self._get_format(format)
 
-        path = os.path.join(document_root, file) 
+        path = os.path.join(document_root, self.cache_key(file))
         img.save(path, format, quality=self.quality)
