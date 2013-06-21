@@ -1,9 +1,27 @@
 # -*- encoding:utf-8 -*-
 
+import os
 from PIL import Image
 from pdb import set_trace as bp
 from os.path import join, basename, dirname, exists, splitext
 
+FORMATS = {
+    "BMP": [".bmp", ".dib"],
+    "DCX": [".dcx"],
+    "EPS": [".eps", ".ps"],
+    "GIF": [".gif"],
+    "IM": [".im"],
+    "JPEG": [".jpg", ".jpe", ".jpeg"],
+    "PCD": [".pcd"],
+    "PCX": [".pcx"],
+    "PDF": [".pdf"],
+    "PNG": [".png"],
+    "PPM": [".pbm", ".pgm", ".ppm"],
+    "PSD": [".psd"],
+    "TIFF": [".tif", ".tiff"],
+    "XBM": [".xbm"],
+    "XPM": [".xpm"],
+}
 
 class ImageThumbnailCenterMode:
     pass
@@ -115,9 +133,39 @@ class ImageThumbnailOperator(object):
 
         return (x, y, except_width, except_height, rate)
 
+    def _get_format(self, ext):
+        for k in FORMATS.keys():
+            for i in FORMATS[k]:
+                if ext == i:
+                    return k
+
+        return "JPEG"
 
     def process(self, file, document_root):
         img = Image.open(join(document_root, file))
 
-        rect = caculate(img.size())
+        w, h = img.size
+        x, y, width, height, rate = self.calculate((w, h))
 
+        crop_width = width / rate
+        crop_height = height / rate
+
+        crop = False
+        if not crop_width == w or not crop_height == h:
+            crop = True
+
+        if x or y or crop:
+            img.crop((x, y, crop_width, crop_height))
+
+        img.thumbnail((width, height), Image.ANTIALIAS)
+
+        format = self.format
+        if not format:
+            format = os.path.splitext(os.path.basename(file))[1]
+            try:
+                format = self._get_format(format)
+            except:
+                format = self._get_format(format)
+
+        path = os.path.join(document_root, file) 
+        img.save(path, format, quality=self.quality)
