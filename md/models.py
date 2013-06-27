@@ -119,6 +119,10 @@ class Message(models.Model):
 class MessageAddon(models.Model):
     message = models.ForeignKey(Message)
     stash = models.BooleanField(default=True)
+    key = models.CharField(max_length=255, default="")
+    width = models.PositiveIntegerField(default=0)
+    height = models.PositiveIntegerField(default=0)
+    size = models.PositiveIntegerField(default=0)
     extra = models.CharField(max_length=255, default="", null=True, blank=True)
     create_at = models.DateTimeField(auto_now_add=True,\
                                      default=datetime.datetime.now())

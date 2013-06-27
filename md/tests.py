@@ -270,6 +270,11 @@ class MessageAddonHandlerTest(OAuthTestCase):
     def test_create(self):
         addons_data = {\
             "message_id": 1,
+            "width": 100,
+            "height": 100,
+            "size": 0,
+            "extra": "{}",
+            "name": "default.jpg",
             "access_token": self.access_token,
         }
         rsp = self.client.post("/api/message/addon/", addons_data)
@@ -279,6 +284,8 @@ class MessageAddonHandlerTest(OAuthTestCase):
         self.assertTrue(addon.has_key("upload_token"))
         self.assertTrue(addon['addon'].has_key('id'))
         self.assertTrue(addon['addon'].has_key('extra'))
+        self.assertEquals(100, int(addon['addon']['width']))
+        self.assertEquals(100, int(addon['addon']['height']))
 
 
 class HandlerTest(TestCase):

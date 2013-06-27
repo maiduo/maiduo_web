@@ -20,6 +20,7 @@ from os.path import join
 from pdb import set_trace as bp
 import os
 import utils
+import hashlib
 import PIL.Image
 import random
 import qiniu.config
@@ -204,7 +205,8 @@ class MessageHandler(BaseHandler):
 
 class MessageAddonHandler(BaseHandler):
     allowed_method = ("POST", "GET",)
-    fields = ("id", "extra",)
+    fields = ("id", "message", "stash", "key", "width", "height", "size",\
+              "create_at", "extra",)
     def _storage_message_image(self, src, message_addon):
         if not src:
             return
@@ -260,21 +262,37 @@ class MessageAddonHandler(BaseHandler):
 
     def create(self, request):
         message_id = request.POST.get("message_id", 0)
-        ext = request.POST.get("ext", "")
+        name = request.POST.get("name", "default.jpg")
         extra = request.POST.get("extra", "{}")
+        width = request.POST.get("width", 0)
+        height = request.POST.get("height", 0)
+        size = request.POST.get("size", 0)
+
         try:
             message = Message.objects.get(pk=message_id)
         except Message.DoesNotExist:
             return rc.NOT_FOUND
 
-        addon = MessageAddon(message=message, extra=extra)
-        addon.save()
+        key = hashlib.sha256(str(random.random())).hexdigest()
+        key = "%s.%s" % (key, name.split(".")[-1])
 
         cfg = utils.MDConfig()
         bucket = cfg.get("storage", "bucket")
-        policy = qiniu.auth_token.PutPolicy("%s:%d.%s" %(bucket, addon.id, ext))
+        policy = qiniu.auth_token.PutPolicy("%s:%s" %(bucket, key))
         policy.expires = 3600 * 24
         upload_token = policy.token()
+
+        msg = {\
+            "message": message,
+            "stash": False,
+            "key": key,
+            "width": width,
+            "height": height,
+            "size": size,
+            "extra": extra
+        }
+
+        addon = MessageAddon.objects.create(**msg)
 
         return {\
             "addon": addon,
