@@ -80,7 +80,7 @@ class MDConfig(ConfigParser.SafeConfigParser, Singleton):
 
         ConfigParser.SafeConfigParser.__init__(self)
         self.readfp(config_fp)
-        # self.load_default()
+        self.load_default()
 
         self.initialized = True
 
