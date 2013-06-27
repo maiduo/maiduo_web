@@ -129,8 +129,31 @@ class MessageHandler(BaseHandler):
     fields = ('id', 'body', 'message_type', 'create_at', 'stash', USER_FIELDS,\
               'activity')
 
+    def __init__(self, *args, **kwargs):
+        super(MessageHandler, self).__init__(*args, **kwargs)
+
+        self.cfg = utils.MDConfig()
+
     def read(request):
         pass
+
+
+    def _send_notification(self, message):
+        if "dev" == self.cfg.get("common", "enviroment"):
+            return
+
+        text = u"%s:%s" % (message.user.name, message.body)
+        notification = push_models.Notification(message=text)
+        notification.extra = {\
+            "activity_id": message.activity.id,
+            "message_id": message.id,
+            "user_id": message.user.id,
+            "message_body": text,
+            "message_type": message.message_type,
+            "type": "message",
+        }
+        devices = activity.devices(service, exclude=[message.user])
+        send_notification(devices, service, notification)
 
     def update(self, request):
         stash = bool(request.PUT.get("stash", False))
@@ -142,19 +165,7 @@ class MessageHandler(BaseHandler):
             msg.save()
 
         if not stash:
-            activity = msg.activity
-            push_text = u"%s:%s" % (request.user.first_name, msg.body)
-            notification = push_models.Notification(message=push_text)
-            notification.extra = {\
-                "activity_id": activity.id,
-                "message_id": msg.id,
-                "user_id": request.user.id,
-                "message_body": push_text,
-                "message_type": msg.message_type,
-                "type": "message",
-            }
-            devices = activity.devices(service, exclude=[request.user])
-            send_notification(devices, service, notification)
+            self._send_notification(msg)
         return msg
 
     def create(self, request):
@@ -174,18 +185,8 @@ class MessageHandler(BaseHandler):
         msg.save()
 
         if not stash:
-            push_text = u"%s:%s" % (request.user.first_name, message_body)
-            notification = push_models.Notification(message=push_text)
-            notification.extra = {\
-                "activity_id": activity_id,
-                "message_id": msg.id,
-                "user_id": request.user.id,
-                "message_body": push_text,
-                "message_type": msg.message_type,
-                "type": "message",
-            }
-            devices = activity.devices(service, exclude=[request.user])
-            send_notification(devices, service, notification)
+            self._send_notification(msg)
+
         return msg
 
 class MessageAddonHandler(BaseHandler):
