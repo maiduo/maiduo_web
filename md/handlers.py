@@ -128,21 +128,11 @@ class MessagesHandler(BaseHandler):
         except Message.DoesNotExist:
             return rc.NOT_FOUND
 
-class MessageHandler(BaseHandler):
-    model = Message
-    allowed_method = ('GET', 'POST', 'PUT',)
-    exclude = ('ip',)
-    fields = ('id', 'body', 'message_type', 'create_at', 'stash', USER_FIELDS,\
-              'activity')
-
+class BaseMessageHandler(BaseHandler):
     def __init__(self, *args, **kwargs):
-        super(MessageHandler, self).__init__(*args, **kwargs)
+        super(BaseMessageHandler, self).__init__(*args, **kwargs)
 
         self.cfg = utils.MDConfig()
-
-    def read(request):
-        pass
-
 
     def _send_notification(self, message):
         if "dev" == self.cfg.get("common", "enviroment"):
@@ -161,18 +151,16 @@ class MessageHandler(BaseHandler):
         devices = activity.devices(service, exclude=[message.user])
         send_notification(devices, service, notification)
 
-    def update(self, request):
-        stash = bool(request.PUT.get("stash", False))
-        message_id = request.PUT.get("message_id", 0)
-        service = request.PUT.get("service", "dev")
-        msg = Message.objects.get(pk=message_id)
-        if not msg.stash == stash:
-            msg.stash = stash
-            msg.save()
 
-        if not stash:
-            self._send_notification(msg)
-        return msg
+class MessageHandler(BaseMessageHandler):
+    model = Message
+    allowed_methods = ('GET', 'POST',)
+    exclude = ('ip',)
+    fields = ('id', 'body', 'message_type', 'create_at', 'stash', USER_FIELDS,\
+              'activity')
+
+    def read(request):
+        pass
 
     def create(self, request):
         attrs = self.flatten_dict(request.POST)
@@ -194,6 +182,26 @@ class MessageHandler(BaseHandler):
             self._send_notification(msg)
 
         return msg
+
+class MessageStashHandler(BaseMessageHandler):
+    model = Message
+    allowed_methods = ('PUT')
+    exclude = ('ip',)
+    fields = ('id', 'body', 'message_type', 'create_at', 'stash', USER_FIELDS,\
+              'activity')
+
+    def update(self, request):
+        stash = bool(request.PUT.get("stash", False))
+        message_id = request.PUT.get("message_id", 0)
+        msg = Message.objects.get(pk=message_id)
+        if not msg.stash == stash:
+            msg.stash = stash
+            msg.save()
+
+        if not stash:
+            self._send_notification(msg)
+        return msg
+
 
 class MessageAddonHandler(BaseHandler):
     allowed_method = ("POST", "GET",)
@@ -518,6 +526,7 @@ class ProfileHandler(MDHandler):
         cfg = utils.MDConfig()
         bucket = cfg.get("storage", "bucket")
         uid = request.user.id
+
         key = "%d/%d.jpg" % (uid % 1000, uid)
         policy = qiniu.auth_token.PutPolicy("%s:%s" %(bucket, key))
         policy.expires = 3600 * 24

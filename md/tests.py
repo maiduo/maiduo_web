@@ -195,13 +195,42 @@ class MessageHandlerTest(OAuthTestCase):
                 'ios_notifications.json']
 
     def test_create_text_message(self):
-        pass
+        request = {\
+            "access_token": self.access_token,
+            "activity_id": 1,
+            "stash": 0,
+            "body": "hello",
+        }
+
+        rsp = self.client.post("/api/message/", request)
+        assert "hello" == simplejson.loads(rsp.content)['body']
 
     def test_create_stash_message(self):
-        pass
+        request = {\
+            "access_token": self.access_token,
+            "activity_id": 1,
+            "stash": 0,
+            "body": "hello",
+        }
 
+        rsp = self.client.post("/api/message/", request)
+        msg = simplejson.loads(rsp.content)
+        assert "hello" == msg['body']
+        assert True == msg['stash']
+
+class MessageStashHandlerTest(OAuthTestCase):
     def test_update(self):
-        pass
+        request = {\
+            "access_token": self.access_token,
+            "activity_id": 1,
+            "message_id": 1,
+            "stash": 1,
+        }
+
+        stash_url = "/api/message/stash/"
+        rsp = self.client.post(stash_url, request, REQUEST_METHOD="PUT")
+        msg = simplejson.loads(rsp.content)
+        assert True == msg['stash']
 
 
 class MessagesHandlerTest(OAuthTestCase):
