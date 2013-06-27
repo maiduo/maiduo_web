@@ -173,21 +173,6 @@ class MessageHandler(BaseHandler):
 
         msg.save()
 
-        #Message.objects.filter(id=msg.id).update(stash=stash)
-        """
-        msg_id = msg.id
-        msg = None
-        msg = Message.objects.get(pk=msg_id)
-        msg.stash = stash
-        msg.save()
-        try:
-            msg.stash = 0
-            msg.save()
-        except Exception, e:
-            print e
-            bp()
-        #self._storage_message_image(request, msg)
-        """
         if not stash:
             push_text = u"%s:%s" % (request.user.first_name, message_body)
             notification = push_models.Notification(message=push_text)
@@ -207,58 +192,6 @@ class MessageAddonHandler(BaseHandler):
     allowed_method = ("POST", "GET",)
     fields = ("id", "message", "stash", "key", "width", "height", "size",\
               "create_at", "extra",)
-    def _storage_message_image(self, src, message_addon):
-        if not src:
-            return
-        ids = (message_addon.id % 1000, message_addon.id)
-        origin_path = "user/img/%d/%d.jpg" % ids
-        preview_path = "user/img/%d/%d_preview.jpg" % ids
-        media_root = settings.MEDIA_ROOT
-        try:
-            os.makedirs(dirname(join(media_root, origin_path)))
-        except OSError:
-            pass
-
-        origin_fd = file(os.path.join(media_root, origin_path), "w+")
-        preview_fd = file(os.path.join(media_root, preview_path), "w+")
-
-        utils.copy_file(src, origin_fd)
-        origin_fd.seek(0)
-        original = PIL.Image.open(origin_fd)
-        w, h = original.size
-        if not "JPEG" == original.format:
-            original.save(origin_fd.name, "JPEG")
-        origin_fd.close()
-
-        if w > 620:
-            preview_size = (620, h * (w / 620.0))
-        else:
-            preview_size = (w, h)
-
-        src.seek(0)
-
-        preview_fd.seek(0)
-        preview = PIL.Image.open(src)
-        if w > 620:
-            preview.thumbnail(preview_size, PIL.Image.ANTIALIAS)
-        preview.save(preview_fd.name, "JPEG")
-
-        src.close()
-        preview_fd.close()
-        origin_fd.close()
-
-
-        # Extra
-        
-        message_addon.extra = simplejson.dumps({\
-            "preview_width": preview_size[0],
-            "preview_height": preview_size[1],
-            "preview_path": preview_path,
-            "origin_width": w,
-            "origin_height": h,
-            "origin_path": origin_path
-        })
-        message_addon.save()
 
     def create(self, request):
         message_id = request.POST.get("message_id", 0)
