@@ -3,5 +3,5 @@ django-ios-notifications
 south
 pillow
 -e git+https://github.com/imcj/django-piston#egg=django-piston
--e git+https://github.com/idlesign/django-oauthost@1a00f09db9a6782b2fc18270b1a21599e9506d42#egg=django-oauthost
+-e git+https://github.com/imcj/django-oauthost@c6382836817c88307de0a712c65575f8f211743a#egg=django-oauthost
 gunicorn
