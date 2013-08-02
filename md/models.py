@@ -2,7 +2,7 @@
 
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import (AbstractBaseUser, \
+from django.contrib.auth.models import (AbstractBaseUser, AbstractUser,\
     BaseUserManager, SiteProfileNotAvailable, PermissionsMixin)
 from django.utils import timezone
 from ios_notifications.models import Device, APNService
@@ -23,15 +23,14 @@ class UserManager(BaseUserManager):
 
         return super(UserManager, self).get(*args, **kwargs)
 
-    def create_user(self, mobile, email=None, password=None, **extra_fields):
+    def create_user(self, mobile, password=None, **extra_fields):
         """
         Creates and saves a User with the given mobile, email and password.
         """
         now = timezone.now()
         if not mobile:
             raise ValueError('The given mobile must be set')
-        email = UserManager.normalize_email(email)
-        user = self.model(mobile=mobile, email=email,
+        user = self.model(mobile=mobile,
                           is_staff=False, is_active=True, is_superuser=False,
                           last_login=now, date_joined=now, **extra_fields)
 
@@ -39,72 +38,13 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, mobile, email, password, **extra_fields):
-        u = self.create_user(mobile, email, password, **extra_fields)
+    def create_superuser(self, mobile, password, **extra_fields):
+        u = self.create_user(mobile, password,  **extra_fields)
         u.is_staff = True
         u.is_active = True
         u.is_superuser = True
         u.save(using=self._db)
         return u
-
-class AbstractUser(AbstractBaseUser, PermissionsMixin):
-    """
-    An abstract base class implementing a fully featured User model with
-    admin-compliant permissions.
-
-    Username, password and email are required. Other fields are optional.
-    """
-
-    first_name = models.CharField('first name', max_length=30, blank=True)
-    last_name = models.CharField('last name', max_length=30, blank=True)
-    email = models.EmailField('email address', blank=True)
-    is_staff = models.BooleanField('staff status', default=False,
-        help_text='Designates whether the user can log into this admin '
-                  'site.')
-    is_active = models.BooleanField('active', default=True,
-        help_text='Designates whether this user should be treated as '
-                  'active. Unselect this instead of deleting accounts.')
-    date_joined = models.DateTimeField('date joined', default=timezone.now)
-
-    USERNAME_FIELD = ''
-    #REQUIRED_FIELDS = ['email']
-
-    class Meta:
-        verbose_name = 'user'
-        verbose_name_plural = 'users'
-        abstract = True
-
-    def get_profile(self):
-        """
-        Returns site-specific profile for this user. Raises
-        SiteProfileNotAvailable if this site does not allow profiles.
-        """
-        warnings.warn("The use of AUTH_PROFILE_MODULE to define user profiles has been deprecated.",
-            PendingDeprecationWarning)
-        if not hasattr(self, '_profile_cache'):
-            from django.conf import settings
-            if not getattr(settings, 'AUTH_PROFILE_MODULE', False):
-                raise SiteProfileNotAvailable(
-                    'You need to set AUTH_PROFILE_MODULE in your project '
-                    'settings')
-            try:
-                app_label, model_name = settings.AUTH_PROFILE_MODULE.split('.')
-            except ValueError:
-                raise SiteProfileNotAvailable(
-                    'app_label and model_name should be separated by a dot in '
-                    'the AUTH_PROFILE_MODULE setting')
-            try:
-                model = models.get_model(app_label, model_name)
-                if model is None:
-                    raise SiteProfileNotAvailable(
-                        'Unable to load the profile model, check '
-                        'AUTH_PROFILE_MODULE in your project settings')
-                self._profile_cache = model._default_manager.using(
-                                   self._state.db).get(user__id__exact=self.id)
-                self._profile_cache.user = self
-            except (ImportError, ImproperlyConfigured):
-                raise SiteProfileNotAvailable
-        return self._profile_cache
 
 class User(AbstractUser):
     mobile = models.CharField(max_length=11, unique=True, db_index=True)
@@ -112,6 +52,10 @@ class User(AbstractUser):
     objects = UserManager()
 
     USERNAME_FIELD = 'mobile'
+    REQUIRED_FIELDS = []
+
+    def get_username(self):
+        return self.mobile
 
     @property
     def name(self):
