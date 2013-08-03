@@ -1,12 +1,12 @@
 [
   {
-    "pk": 2, 
+    "pk": 1, 
     "model": "oauthost.client", 
     "fields": {
       "token_lifetime": null, 
       "password": "", 
       "description": "test", 
-      "title": "test", 
+      "title": "test1", 
       "hash_sign_supported": true, 
       "date_registered": "2013-05-02T06:17:21.613Z", 
       "link": "", 
@@ -17,11 +17,28 @@
     }
   },
   {
+    "pk": 2, 
+    "model": "oauthost.client", 
+    "fields": {
+      "token_lifetime": null, 
+      "password": "", 
+      "description": "test2", 
+      "title": "test", 
+      "hash_sign_supported": true, 
+      "date_registered": "2013-05-02T06:17:21.613Z", 
+      "link": "", 
+      "user": 1, 
+      "scopes": [],
+      "identifier": "104c03b3103e4d5e96d042330f6dd0c8", 
+      "type": 1
+    }
+  },
+  {
     "pk": 1,
     "model": "oauthost.scope",
     "fields": {
-      "identifier": "message:create",
-      "title": "message:create"
+      "identifier": "",
+      "title": ""
     }
   }
 ]

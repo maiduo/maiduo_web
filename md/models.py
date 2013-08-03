@@ -17,12 +17,6 @@ MESSAGE_TYPE_CHOICES = (\
 )
 
 class UserManager(BaseUserManager):
-    def get(self, *args, **kwargs):
-        if kwargs.has_key("username"):
-            kwargs["mobile"] = kwargs.pop("username")
-
-        return super(UserManager, self).get(*args, **kwargs)
-
     def create_user(self, mobile, password=None, **extra_fields):
         """
         Creates and saves a User with the given mobile, email and password.

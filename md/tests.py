@@ -286,7 +286,7 @@ class HandlerTest(TestCase):
         handlers.push_models = ios_notifications_models
 
 class AuthenticationHandlerTest(TestCase):
-    fixtures = ['users', 'activity.json', 'ios_notifications.json',\
+    fixtures = ['users.json', 'activity.json', 'ios_notifications.json',\
                 'oauthost.json']
 
     def setUp(self):

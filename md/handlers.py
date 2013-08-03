@@ -371,9 +371,6 @@ class AuthenticationHandler(BaseHandler):
 
 
     def create(self, request):
-        if request.POST.has_key("mobile"):
-            request.POST["username"] = request.POST.get("mobile")
-            
         rsp = auth_views.endpoint_token(request)
         JSON = simplejson.loads(rsp.content)
 
@@ -384,6 +381,12 @@ class AuthenticationHandler(BaseHandler):
         if auth_success:
             user = User.objects.get(mobile=mobile)
             self.bind_user_and_device_token(user, device_token, service)
+
+        else:
+            user = None
+
+        if not user:
+            return rsp
 
         JSON['user'] = user
         return JSON

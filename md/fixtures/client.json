@@ -1,0 +1,34 @@
+[
+  {
+    "pk": 10,
+    "model": "md.user", 
+    "fields": {
+      "mobile": "18621068396",
+      "username": "18621068396",
+      "first_name": "琮举", 
+      "last_name": "魏", 
+      "is_active": true, 
+      "is_superuser": false, 
+      "is_staff": false, 
+      "last_login": "2013-05-02T06:16:23.844Z", 
+      "groups": [], 
+      "user_permissions": [], 
+      "password": "pbkdf2_sha256$10000$LQ0IRGsyrU9D$xHPFxj3HzVv2lUySjymb+WRO1DECa9+34Ck4l/jZVfE=", 
+      "email": "", 
+      "date_joined": "2013-05-02T06:16:23.844Z"
+    }
+  },
+  {
+    "pk": 1, 
+    "model": "md.Activity", 
+    "fields": {
+      "ip": "127.0.0.1", 
+      "create_at": "2013-05-04T15:08:45.493Z", 
+      "update_at": "2013-05-04T15:08:45.493Z", 
+      "owner": 10,
+      "user": [1, 2, 3, 4],
+      "subject": "test"
+    }
+  },
+
+]

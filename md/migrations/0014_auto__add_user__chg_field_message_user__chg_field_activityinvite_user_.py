@@ -14,6 +14,7 @@ class Migration(SchemaMigration):
             ('password', self.gf('django.db.models.fields.CharField')(max_length=128)),
             ('last_login', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
             ('is_superuser', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('username', self.gf('django.db.models.fields.CharField')(unique=True, max_length=30)),
             ('first_name', self.gf('django.db.models.fields.CharField')(max_length=30, blank=True)),
             ('last_name', self.gf('django.db.models.fields.CharField')(max_length=30, blank=True)),
             ('email', self.gf('django.db.models.fields.EmailField')(max_length=75, blank=True)),
@@ -154,11 +155,15 @@ class Migration(SchemaMigration):
         },
         u'md.messageaddon': {
             'Meta': {'object_name': 'MessageAddon'},
-            'create_at': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2013, 6, 14, 0, 0)', 'auto_now_add': 'True', 'blank': 'True'}),
+            'create_at': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2013, 8, 2, 0, 0)', 'auto_now_add': 'True', 'blank': 'True'}),
             'extra': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'null': 'True', 'blank': 'True'}),
+            'height': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'key': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255'}),
             'message': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['md.Message']"}),
-            'stash': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
+            'size': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
+            'stash': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'width': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'})
         },
         u'md.smslog': {
             'Meta': {'object_name': 'SMSLog'},
@@ -182,7 +187,8 @@ class Migration(SchemaMigration):
             'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'mobile': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '11', 'db_index': 'True'}),
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'})
+            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
+            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
         },
         u'md.usertoken': {
             'Meta': {'object_name': 'UserToken'},
