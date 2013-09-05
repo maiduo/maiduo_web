@@ -53,7 +53,7 @@ if MYSQL_HOST:
     }
 
 APPS = []
-ENVIRONMENT = mdconf.get("command", "environment", "dev")
+ENVIRONMENT = mdconf.get("setting", "environment", "dev")
 if "production" == ENVIRONMENT:
     try:
         MEDIA_ROOT = mdconf.get("setting", "media_root")
