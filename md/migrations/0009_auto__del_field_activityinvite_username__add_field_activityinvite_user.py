@@ -13,12 +13,12 @@ class Migration(SchemaMigration):
 
         # Adding field 'ActivityInvite.user'
         db.add_column('md_activityinvite', 'user',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=0, related_name='users', to=orm['auth.User']),
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=1, related_name='users', to=orm['auth.User']),
                       keep_default=False)
 
         # Adding field 'ActivityInvite.refer'
         db.add_column('md_activityinvite', 'refer',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=0, related_name='refers', to=orm['auth.User']),
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=1, related_name='refers', to=orm['auth.User']),
                       keep_default=False)
 
 

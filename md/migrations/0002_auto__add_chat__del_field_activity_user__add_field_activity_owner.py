@@ -24,7 +24,7 @@ class Migration(SchemaMigration):
 
         # Adding field 'Activity.owner'
         db.add_column('md_activity', 'owner',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=0, to=orm['auth.User'], null=True, blank=True),
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['auth.User'], null=True, blank=True),
                       keep_default=False)
 
 
@@ -34,7 +34,7 @@ class Migration(SchemaMigration):
 
         # Adding field 'Activity.user'
         db.add_column('md_activity', 'user',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=0, to=orm['auth.User']),
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['auth.User']),
                       keep_default=False)
 
         # Deleting field 'Activity.owner'
